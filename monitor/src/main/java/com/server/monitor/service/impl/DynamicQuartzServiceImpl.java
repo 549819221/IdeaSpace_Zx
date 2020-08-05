@@ -139,7 +139,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             logger.error( new StringBuilder( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             monitorLog.setStatus( ParamEnum.yesOrNo.no.getCode().toString() );
             monitorLog.setMsg( new StringBuilder( "监控接口异常。" ).toString() );
-            monitorLog.setResult( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
+            monitorLog.setResult( new StringBuilder( "监控接口异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
         } finally {
             try {
                 return HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
