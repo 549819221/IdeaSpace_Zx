@@ -2,11 +2,9 @@ package com.server.monitor.service.impl;
 
 import com.server.monitor.entity.parent.Monitor;
 import com.server.monitor.service.BasisService;
-import com.server.monitor.util.HttpUtil;
-import com.server.monitor.util.MapUtil;
-import com.server.monitor.util.NodeRegisterTool;
-import com.server.monitor.util.PowerUtil;
+import com.server.monitor.util.*;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -32,6 +30,9 @@ import java.util.*;
 @Service("basisService")
 @PropertySource({"classpath:application.properties"})
 public class BasisServiceImpl implements BasisService {
+
+
+    private static Logger logger = Logger.getLogger( DynamicQuartzServiceImpl.class );
 
     @Value("${basisUrL}")
     public String basisUrL;
@@ -59,8 +60,8 @@ public class BasisServiceImpl implements BasisService {
 
 
     /**
+     * @description  节点注册
      * @return 返回结果
-     * @description
      * @date 20/07/10 15:00
      * @author wanghb
      * @edit
@@ -72,7 +73,7 @@ public class BasisServiceImpl implements BasisService {
             StringBuffer url = new StringBuffer( basisUrL ).append( registerUrL );
             Map<String, Object> params = new HashMap<>();
             String name = "服务监控";
-            String ip = getHostIp();
+            String ip = HttpUtil.getHostIp();
             String port = serverPort;
             String objId = NodeRegisterTool.getObjId( ip + "|" + port );
 
@@ -87,38 +88,9 @@ public class BasisServiceImpl implements BasisService {
             //String errcode = PowerUtil.getString( result.get( "errcode" ) );
             nodeId = objId;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error( new StringBuilder( "节点注册异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
         }
         return result;
-    }
-
-    /**
-     * @description  获取本地ip
-     * @return  ip
-     * @date  20/07/30 18:30
-     * @author  wanghb
-     * @edit
-     */
-    private static String getHostIp(){
-        try{
-            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (allNetInterfaces.hasMoreElements()){
-                NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
-                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
-                while (addresses.hasMoreElements()){
-                    InetAddress ip = (InetAddress) addresses.nextElement();
-                    if (ip != null
-                            && ip instanceof Inet4Address
-                            && !ip.isLoopbackAddress() //loopback地址即本机地址，IPv4的loopback范围是127.0.0.0 ~ 127.255.255.255
-                            && ip.getHostAddress().indexOf(":")==-1){
-                        return ip.getHostAddress();
-                    }
-                }
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /**
@@ -146,22 +118,6 @@ public class BasisServiceImpl implements BasisService {
         List<Map<String, Object>> list = (List<Map<String, Object>>) result.get( "data" );
         return list;
     }
-
-    /**
-     * @return
-     * @throws MalformedObjectNameException
-     * 获取当前机器的端口号
-     */
-    public static String getLocalPort() throws MalformedObjectNameException {
-        MBeanServer beanServer = ManagementFactory.getPlatformMBeanServer();
-        Set<ObjectName> objectNames = beanServer.queryNames(new ObjectName("*:type=Connector,*"),
-                Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
-        String port = objectNames.iterator().next().getKeyProperty("port");
-        return port;
-    }
-
-
-
 
 
 }

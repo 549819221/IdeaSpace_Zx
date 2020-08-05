@@ -26,7 +26,7 @@ public class BasisController  {
 
 
     /**
-     * @description  详情
+     * @description  节点注册
      * @return  实体对象
      * @date  2020-07-10 14:43:44
      * @author  wanghb

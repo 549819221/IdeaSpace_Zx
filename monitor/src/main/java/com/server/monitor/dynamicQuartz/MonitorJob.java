@@ -24,7 +24,7 @@ public class MonitorJob implements Job {
     DynamicQuartzService dynamicQuartzService;
 
     /**
-     * @description  动态任务的逻辑方法
+     * @description  动态任务的逻辑处理方法
      * @param  arg0  当前任务的信息
      * @return  void
      * @date  20/07/14 15:35

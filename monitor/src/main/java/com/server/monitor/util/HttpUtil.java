@@ -1,10 +1,7 @@
 package com.server.monitor.util;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
 
 import com.alibaba.fastjson.JSON;
@@ -211,6 +208,31 @@ public class HttpUtil {
             in =  entity.getContent();
         }
         return in;
+    }
+
+    /**
+     * @description  获取本地ip
+     * @return  ip
+     * @date  20/07/30 18:30
+     * @author  wanghb
+     * @edit
+     */
+    public static String getHostIp() throws SocketException {
+        Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (allNetInterfaces.hasMoreElements()){
+            NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+            Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
+            while (addresses.hasMoreElements()){
+                InetAddress ip = (InetAddress) addresses.nextElement();
+                if (ip != null
+                        && ip instanceof Inet4Address
+                        && !ip.isLoopbackAddress() //loopback地址即本机地址，IPv4的loopback范围是127.0.0.0 ~ 127.255.255.255
+                        && ip.getHostAddress().indexOf(":")==-1){
+                    return ip.getHostAddress();
+                }
+            }
+        }
+        return null;
     }
 
 }

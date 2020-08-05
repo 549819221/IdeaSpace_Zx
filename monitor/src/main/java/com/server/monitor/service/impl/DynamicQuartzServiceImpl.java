@@ -31,7 +31,9 @@ import java.util.Map;
 @Service("dynamicQuartz")
 @PropertySource({"classpath:application.properties"})
 public class DynamicQuartzServiceImpl implements DynamicQuartzService {
+
     private static Logger logger = Logger.getLogger( DynamicQuartzServiceImpl.class );
+
     public static Map<String, Map<String, Object>> monitorCache = new HashMap<>();
 
     @Value("${basisUrL}")
@@ -39,12 +41,13 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
 
     @Autowired
     private Scheduler scheduler;
+
     @Resource
     private BasisService basisService;
 
     /**
-     * @return 结果
      * @description 测试定时任务的接口
+     * @return 结果
      * @date 20/07/14 10:12
      * @author wanghb
      * @edit
@@ -107,9 +110,9 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
     }
 
     /**
-     * @param monitorTemp 任务内容
-     * @return
      * @description 处理任务
+     * @param monitorTemp 任务内容
+     * @return  处理结果
      * @date 20/07/15 9:43
      * @author wanghb
      * @edit
@@ -131,7 +134,6 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             } else if (ParamEnum.MonitorEnum.MONITOR_APPLICATION.getName().equals( monitor.getType() )) {
                 ApplicationMonitor applicationMonitor = MapUtil.toBean( monitorTemp, ApplicationMonitor.class );
                 performMonitor( applicationMonitor, monitorLog );
-                return null;
             }
         } catch (Exception e) {
             logger.error( new StringBuilder( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
@@ -141,6 +143,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             try {
                 return HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
             } catch (IOException e) {
+                logger.error( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
                 e.printStackTrace();
                 return null;
             }
@@ -148,9 +151,9 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
     }
 
     /**
+     * @description 执行服务器监控
      * @param serverMonitor 服务器监控信息
      * @param monitorLog    监控日志
-     * @description 执行服务器监控
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
@@ -185,9 +188,9 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
     }
 
     /**
-     * @param diskMonitor 服务器监控信息
-     * @param monitorLog  监控日志
      * @description 执行服务器监控
+     * @param diskMonitor 磁盘监控信息
+     * @param monitorLog  监控日志
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
@@ -216,14 +219,14 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
     }
 
     /**
-     * @param applicationMonitor 服务器监控信息
-     * @param monitorLog         监控日志
      * @description 执行次应用监控
+     * @param applicationMonitor 应用监控信息
+     * @param monitorLog         监控日志
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
      */
-    private void performMonitor(ApplicationMonitor applicationMonitor, MonitorLog monitorLog) throws Exception {
+    private void performMonitor(ApplicationMonitor applicationMonitor, MonitorLog monitorLog) {
         StringBuilder result = new StringBuilder();
         String state = null;
         Integer http = applicationMonitor.getHttp();
@@ -255,9 +258,9 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
 
 
     /**
-     * @param objId 任务id
-     * @return
      * @description 判断任务是否存在
+     * @param objId 任务id
+     * @return  是否存在该定时任务
      * @date 20/07/14 15:01
      * @author wanghb
      * @edit
@@ -275,7 +278,6 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
 
     /**
      * @param task 任务对象
-     * @return
      * @description 添加任务
      * @date 20/07/14 9:30
      * @author wanghb
@@ -292,7 +294,6 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 // 任务名称和组构成任务key
                 JobDetail jobDetail = JobBuilder.newJob( jobClass ).withIdentity( task.getJobName(), task.getObjId() ).build();
                 // 定义调度触发规则
-                // 使用cornTrigger规则
                 // 触发器key
                 Trigger trigger = TriggerBuilder.newTrigger().withIdentity( task.getJobName(), task.getObjId() )
                         .startAt( DateBuilder.futureDate( 1, DateBuilder.IntervalUnit.SECOND ) )
