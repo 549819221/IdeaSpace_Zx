@@ -262,10 +262,10 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 mas.append( "http请求超时异常" ).append( "; " );
                 result.append( new StringBuilder( "http请求超时异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             } catch (Exception e) {
-                logger.error( new StringBuilder("http访问异常异常,异常信息:").append( ExceptionUtil.getOutputStream( e ) ) );
+                logger.error( new StringBuilder("http访问异常,异常信息:").append( ExceptionUtil.getOutputStream( e ) ) );
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                mas.append( "http访问异常异常" ).append( "; " );
-                result.append( new StringBuilder( "http访问异常异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
+                mas.append( "http访问异常" ).append( "; " );
+                result.append( new StringBuilder( "http访问异常,访问地址:").append( url ).append(";异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             }
         }
         state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;

@@ -40,7 +40,7 @@ public class ScheduledTasks {
     @Autowired
     private Scheduler scheduler;
 
-    @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     public void runfirst(){
         dynamicQuartzService.quartz();
     }
