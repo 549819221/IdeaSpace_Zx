@@ -37,6 +37,8 @@ public class BasisServiceImpl implements BasisService {
     @Value("${basisUrL}")
     public String basisUrL;
     //public final static String basisUrL = "http://zyxlgx.top:9090/monitor-center/";
+    @Value("${nodeIp}")
+    public String nodeIp;
 
     @Value("${server.port}")
     public String serverPort;
@@ -73,7 +75,8 @@ public class BasisServiceImpl implements BasisService {
             StringBuffer url = new StringBuffer( basisUrL ).append( registerUrL );
             Map<String, Object> params = new HashMap<>();
             String name = "服务监控";
-            String ip = HttpUtil.getHostIp();
+            //String ip = HttpUtil.getHostIp();
+            String ip = nodeIp;
             String port = serverPort;
             String objId = NodeRegisterTool.getObjId( ip + "|" + port );
 

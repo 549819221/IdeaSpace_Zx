@@ -61,7 +61,7 @@ public class HttpUtil {
      * @author  wanghb
      * @edit
      */
-    public static Map<String, Object> get(String url,Map<String, Object> params,Integer connectTimeout) throws IOException {
+    public static String get(String url,Map<String, Object> params,Integer connectTimeout) throws IOException {
         if(params != null && params.size() > 0){
             url += "?"+getUrlParamsByMap( params );
         }
@@ -76,9 +76,9 @@ public class HttpUtil {
         }
         // 执行请求，获取相应
         String result = getRespString( get);
-        Map<String, Object> resultMaps = (Map) JSON.parse(result);
+        //Map<String, Object> resultMaps = (Map) JSON.parse(result);
         //logger.info("get返回结果===>"+resultMaps);
-        return resultMaps;
+        return result;
     }
 
     /**

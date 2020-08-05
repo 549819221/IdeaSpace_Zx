@@ -53,6 +53,8 @@ public class MonitorLog extends SimpleEntityParent {
     @Column(length = 500)
     private String result;
 
+    private String msg;
+
     @Column(length = 2)
     private String status;
 

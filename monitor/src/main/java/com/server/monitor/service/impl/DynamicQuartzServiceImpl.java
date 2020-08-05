@@ -138,7 +138,8 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
         } catch (Exception e) {
             logger.error( new StringBuilder( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             monitorLog.setStatus( ParamEnum.yesOrNo.no.getCode().toString() );
-            monitorLog.setResult( new StringBuilder( "监控接口异常。" ).toString() );
+            monitorLog.setMsg( new StringBuilder( "监控接口异常。" ).toString() );
+            monitorLog.setResult( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
         } finally {
             try {
                 return HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
@@ -159,6 +160,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
      * @edit
      */
     private void performMonitor(ServerMonitor serverMonitor, MonitorLog monitorLog) throws Exception {
+        StringBuilder mas = new StringBuilder();
         StringBuilder result = new StringBuilder();
         String state = null;
         String ip = serverMonitor.getServerDetail().getIp();
@@ -168,9 +170,10 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 boolean pingState = PingUtils.ping( ip );
                 if (!pingState) {
                     state = ParamEnum.yesOrNo.no.getCode().toString();
-                    result.append( "ping异常,异常ip:" ).append( ip );
+                    mas.append( "ping异常,异常ip:" ).append( ip ).append( "; " );
                 }
             } catch (IOException e) {
+                mas.append( "监控异常" ).append( "; " );
                 result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
                 state = ParamEnum.yesOrNo.no.getCode().toString();
             }
@@ -178,12 +181,13 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
         if (ParamEnum.yesOrNo.yes.getCode().equals( serverMonitor.getTelnet() )) {
             boolean telnetPortState = PingUtils.tcpPing( ip, telnetPort );
             if (!telnetPortState) {
-                result.append( "  telnetPing异常,异常ip:" ).append( ip ).append( "异常端口:" ).append( telnetPort );
+                mas.append( "telnetPing异常,异常ip:" ).append( ip ).append( "异常端口:" ).append( telnetPort ).append( "; " );
                 state = ParamEnum.yesOrNo.no.getCode().toString();
             }
         }
         state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
         monitorLog.setStatus( state );
+        monitorLog.setMsg( mas.toString() );
         monitorLog.setResult( result.toString() );
     }
 
@@ -199,23 +203,23 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
         DiskInfo diskInfo = (DiskInfo) DiskUtil.executeCmd( diskMonitor );
         BigDecimal operateValue = PowerUtil.getBigDecimal( diskMonitor.getOperateValue() );
         String state = null;
-        StringBuilder result = new StringBuilder();
+        StringBuilder mas = new StringBuilder();
         //剩余空间百分比
         if (ParamEnum.operate.percentage.getCode().equals( diskMonitor.getOperate() )) {
             if (operateValue.compareTo( diskInfo.getPercentage() ) > 0) {
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                result.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( diskInfo.getPercentage() ).append( "%" );
+                mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( diskInfo.getPercentage() ).append( "%" );
             }
             //剩余空间大小
         } else {
             if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                result.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( ",目前剩余:" ).append( diskInfo.getFreeSpace() );
+                mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( ",目前剩余:" ).append( diskInfo.getFreeSpace() );
             }
         }
         state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
         monitorLog.setStatus( state );
-        monitorLog.setResult( result.toString() );
+        monitorLog.setMsg( mas.toString() );
     }
 
     /**
@@ -227,31 +231,46 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
      * @edit
      */
     private void performMonitor(ApplicationMonitor applicationMonitor, MonitorLog monitorLog) {
+        StringBuilder mas = new StringBuilder();
         StringBuilder result = new StringBuilder();
         String state = null;
         Integer http = applicationMonitor.getHttp();
+        Integer telnet = applicationMonitor.getTelnet();
+        if (ParamEnum.yesOrNo.yes.getCode().equals( telnet )) {
+            Integer telnetPort = applicationMonitor.getAppPort();
+            String serverIp = applicationMonitor.getServerDetail().getIp();
+            boolean telnetPortState = PingUtils.tcpPing( serverIp, telnetPort );
+            if (!telnetPortState) {
+                mas.append( "telnetPing异常,异常ip:" ).append( serverIp ).append( "异常端口:" ).append( telnetPort ).append( "; " );
+                state = ParamEnum.yesOrNo.no.getCode().toString();
+            }
+        }
         if (ParamEnum.yesOrNo.yes.getCode().equals( http )) {
             String url = applicationMonitor.getUrl();
             String httpResult = PowerUtil.getString( applicationMonitor.getHttpResult() ) ;
             Integer httpTimeout = applicationMonitor.getHttpTimeout();
             String httpStrTemp = null;
             try {
-                httpStrTemp = PowerUtil.getString( JSON.toJSONString( HttpUtil.get( url, null, httpTimeout ) ) );
+                httpStrTemp = PowerUtil.getString( HttpUtil.get( url, null, httpTimeout ));
                 if (!httpStrTemp.contains( httpResult )) {
                     state = ParamEnum.yesOrNo.no.getCode().toString();
-                    result.append( "http接口返回结果不一致。" );
+                    mas.append( "http接口返回结果不一致" ).append( "; " );
+                    result.append( new StringBuilder( "http接口返回结果不一致,参考值:" ).append( httpResult ).append( ",实际返回值:" ).append( httpStrTemp ).toString()  );
                 }
             } catch (ConnectTimeoutException e) {
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                result.append( "http请求超时异常。" );
+                mas.append( "http请求超时异常" ).append( "; " );
+                result.append( new StringBuilder( "http请求超时异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             } catch (Exception e) {
                 logger.error( new StringBuilder("http访问异常异常,异常信息:").append( ExceptionUtil.getOutputStream( e ) ) );
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                result.append( "http访问异常异常。" );
+                mas.append( "http访问异常异常" ).append( "; " );
+                result.append( new StringBuilder( "http访问异常异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             }
         }
         state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
         monitorLog.setStatus( state );
+        monitorLog.setMsg( mas.toString() );
         monitorLog.setResult( result.toString() );
 
     }
