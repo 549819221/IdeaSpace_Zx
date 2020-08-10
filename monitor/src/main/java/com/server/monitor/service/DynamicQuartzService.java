@@ -30,5 +30,5 @@ public interface DynamicQuartzService {
 
     boolean isExist(String s) throws SchedulerException;
 
-    Object dealWithJob(Map<String, Object> monitor);
+    void dealWithJob(Map<String, Object> monitor);
 }

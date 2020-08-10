@@ -10,6 +10,7 @@ import com.server.monitor.entity.ServerMonitor;
 import com.server.monitor.entity.parent.Monitor;
 import com.server.monitor.service.impl.DynamicQuartzServiceImpl;
 import com.server.monitor.util.entity.DiskInfo;
+import javafx.util.Pair;
 import org.apache.log4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +31,7 @@ public class DiskUtil {
      *
      * @return
      */
-    public static Object executeCmd(Monitor monitor) {
-
-
+    public static Object executeCmd(Monitor monitor)throws Exception {
         Server server = monitor.getServerDetail();
         String host = server.getIp();
         String loginName = server.getUsername();
@@ -52,8 +51,9 @@ public class DiskUtil {
         try {
             conn.connect();
             boolean flag = conn.authenticateWithPassword(loginName, passWord);
-            if (!flag) {
-                 logger.error("用户名或密码错误");
+            if (PowerUtil.isNull( flag ) || !flag) {
+                logger.error("登陆服务器的账号或密码错误.");
+                throw new Exception("登陆服务器的账号或密码错误.");
             } else {
                 //logger.info("连接成功");
                 ssh = conn.openSession();

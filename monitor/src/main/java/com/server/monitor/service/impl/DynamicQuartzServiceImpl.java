@@ -1,14 +1,13 @@
 package com.server.monitor.service.impl;
 
-import ch.ethz.ssh2.Session;
 import com.acrabsoft.utils.net.PingUtils;
-import com.alibaba.fastjson.JSON;
 import com.server.monitor.entity.*;
 import com.server.monitor.entity.parent.Monitor;
 import com.server.monitor.service.BasisService;
 import com.server.monitor.service.DynamicQuartzService;
 import com.server.monitor.util.*;
 import com.server.monitor.util.entity.DiskInfo;
+import io.swagger.annotations.ApiOperation;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.log4j.Logger;
@@ -21,11 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.SocketTimeoutException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Service("dynamicQuartz")
@@ -118,138 +113,149 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
      * @edit
      */
     @Override
-    public Object dealWithJob(Map<String, Object> monitorTemp) {
-        MonitorLog monitorLog = new MonitorLog();
+    public void dealWithJob(Map<String, Object> monitorTemp) {
+        List<MonitorLog> monitorLogs = new ArrayList<>();
+        Monitor monitor = MapUtil.toBean( monitorTemp, Monitor.class );
+        if (ParamEnum.MonitorEnum.MONITOR_SERVER.getName().equals( monitor.getType() )) {
+            ServerMonitor serverMonitor = MapUtil.toBean( monitorTemp, ServerMonitor.class );
+            performMonitor( serverMonitor, monitorLogs );
+        } else if (ParamEnum.MonitorEnum.MONITOR_DISK.getName().equals( monitor.getType() )) {
+            DiskMonitor diskMonitor = MapUtil.toBean( monitorTemp, DiskMonitor.class );
+            performMonitor( diskMonitor, monitorLogs );
+        } else if (ParamEnum.MonitorEnum.MONITOR_APPLICATION.getName().equals( monitor.getType() )) {
+            ApplicationMonitor applicationMonitor = MapUtil.toBean( monitorTemp, ApplicationMonitor.class );
+            performMonitor( applicationMonitor, monitorLogs );
+        }
         try {
-            Monitor monitor = MapUtil.toBean( monitorTemp, Monitor.class );
-            String objId = monitor.getObjId();
-            monitorLog.setNodeId( BasisServiceImpl.nodeId  );
-            monitorLog.setMonitorId( objId );
-            if (ParamEnum.MonitorEnum.MONITOR_SERVER.getName().equals( monitor.getType() )) {
-                ServerMonitor serverMonitor = MapUtil.toBean( monitorTemp, ServerMonitor.class );
-                performMonitor( serverMonitor, monitorLog );
-            } else if (ParamEnum.MonitorEnum.MONITOR_DISK.getName().equals( monitor.getType() )) {
-                DiskMonitor diskMonitor = MapUtil.toBean( monitorTemp, DiskMonitor.class );
-                performMonitor( diskMonitor, monitorLog );
-            } else if (ParamEnum.MonitorEnum.MONITOR_APPLICATION.getName().equals( monitor.getType() )) {
-                ApplicationMonitor applicationMonitor = MapUtil.toBean( monitorTemp, ApplicationMonitor.class );
-                performMonitor( applicationMonitor, monitorLog );
+            for (MonitorLog monitorLog : monitorLogs) {
+                HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
             }
-        } catch (Exception e) {
-            logger.error( new StringBuilder( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-            monitorLog.setStatus( ParamEnum.yesOrNo.no.getCode().toString() );
-            monitorLog.setMsg( new StringBuilder( "监控接口异常。" ).toString() );
-            monitorLog.setResult( new StringBuilder( "监控接口异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
-        } finally {
-            try {
-                return HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
-            } catch (IOException e) {
-                logger.error( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-                e.printStackTrace();
-                return null;
-            }
+        } catch (IOException e) {
+            logger.error( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            e.printStackTrace();
         }
     }
 
     /**
      * @description 执行服务器监控
      * @param serverMonitor 服务器监控信息
-     * @param monitorLog    监控日志
+     * @param monitorLogs    监控日志
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
      */
-    private void performMonitor(ServerMonitor serverMonitor, MonitorLog monitorLog) throws Exception {
-        StringBuilder mas = new StringBuilder();
-        StringBuilder result = new StringBuilder();
-        String state = null;
+    private void performMonitor(ServerMonitor serverMonitor, List<MonitorLog> monitorLogs)  {
         String ip = serverMonitor.getServerDetail().getIp();
         Integer telnetPort = serverMonitor.getTelnetPort();
         if (ParamEnum.yesOrNo.yes.getCode().equals( serverMonitor.getPing() )) {
+            MonitorLog monitorLog = new MonitorLog();
+            monitorLog.setNodeId( BasisServiceImpl.nodeId  );
+            monitorLog.setMonitorId( serverMonitor.getObjId() );
+            StringBuilder mas = new StringBuilder();
+            StringBuilder result = new StringBuilder();
+            String state = null;
             try {
                 boolean pingState = PingUtils.ping( ip );
                 if (!pingState) {
                     state = ParamEnum.yesOrNo.no.getCode().toString();
                     mas.append( "ping异常,异常ip:" ).append( ip ).append( "; " );
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 mas.append( "监控异常" ).append( "; " );
                 result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
+                logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
                 state = ParamEnum.yesOrNo.no.getCode().toString();
             }
+            monitorLog.setStatus( state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state );
+            monitorLog.setMsg( mas.toString() );
+            monitorLog.setResult( result.toString() );
+            monitorLogs.add(monitorLog);
         }
         if (ParamEnum.yesOrNo.yes.getCode().equals( serverMonitor.getTelnet() )) {
-            boolean telnetPortState = PingUtils.tcpPing( ip, telnetPort );
-            if (!telnetPortState) {
-                mas.append( "telnetPing异常,异常ip:" ).append( ip ).append( "异常端口:" ).append( telnetPort ).append( "; " );
-                state = ParamEnum.yesOrNo.no.getCode().toString();
-            }
+            MonitorLog monitorLog = getTelnetPingLog( serverMonitor.getObjId(), ip, telnetPort );
+            monitorLogs.add(monitorLog);
         }
-        state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
-        monitorLog.setStatus( state );
-        monitorLog.setMsg( mas.toString() );
-        monitorLog.setResult( result.toString() );
+
+
     }
 
+
     /**
-     * @description 执行服务器监控
+     * @description 执行磁盘监控
      * @param diskMonitor 磁盘监控信息
-     * @param monitorLog  监控日志
+     * @param monitorLogs  监控日志
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
      */
-    private void performMonitor(DiskMonitor diskMonitor, MonitorLog monitorLog) throws Exception {
-        DiskInfo diskInfo = (DiskInfo) DiskUtil.executeCmd( diskMonitor );
-        BigDecimal operateValue = PowerUtil.getBigDecimal( diskMonitor.getOperateValue() );
-        String state = null;
+    private void performMonitor(DiskMonitor diskMonitor, List<MonitorLog> monitorLogs)  {
+        MonitorLog monitorLog = new MonitorLog();
+        monitorLog.setNodeId( BasisServiceImpl.nodeId  );
+        monitorLog.setMonitorId( diskMonitor.getObjId() );
         StringBuilder mas = new StringBuilder();
-        //剩余空间百分比
-        if (ParamEnum.operate.percentage.getCode().equals( diskMonitor.getOperate() )) {
-            if (operateValue.compareTo( diskInfo.getPercentage() ) > 0) {
-                state = ParamEnum.yesOrNo.no.getCode().toString();
-                mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( diskInfo.getPercentage() ).append( "%" );
+        StringBuilder result = new StringBuilder();
+        String state = null;
+        try {
+            DiskInfo diskInfo = (DiskInfo) DiskUtil.executeCmd( diskMonitor );
+            BigDecimal operateValue = PowerUtil.getBigDecimal( diskMonitor.getOperateValue() );
+            //剩余空间百分比
+            if (ParamEnum.operate.percentage.getCode().equals( diskMonitor.getOperate() )) {
+                if (operateValue.compareTo( diskInfo.getPercentage() ) > 0) {
+                    state = ParamEnum.yesOrNo.no.getCode().toString();
+                    mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( diskInfo.getPercentage() ).append( "%" );
+                }
+                //剩余空间大小
+            } else {
+                if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
+                    state = ParamEnum.yesOrNo.no.getCode().toString();
+                    mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( ",目前剩余:" ).append( diskInfo.getFreeSpace() );
+                }
             }
-            //剩余空间大小
-        } else {
-            if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
-                state = ParamEnum.yesOrNo.no.getCode().toString();
-                mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( ",目前剩余:" ).append( diskInfo.getFreeSpace() );
-            }
+            state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
+            monitorLog.setStatus( state );
+            monitorLog.setMsg( mas.toString() );
+        } catch (Exception e) {
+            mas.append( "监控异常" ).append( "; " );
+            result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
+            logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
+            state = ParamEnum.yesOrNo.no.getCode().toString();
         }
-        state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
-        monitorLog.setStatus( state );
+        monitorLog.setStatus( state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state );
         monitorLog.setMsg( mas.toString() );
+        monitorLog.setResult( result.toString() );
+        monitorLogs.add(monitorLog);
     }
 
     /**
      * @description 执行次应用监控
      * @param applicationMonitor 应用监控信息
-     * @param monitorLog         监控日志
+     * @param monitorLogs 监控日志
      * @date 20/07/24 17:04
      * @author wanghb
      * @edit
      */
-    private void performMonitor(ApplicationMonitor applicationMonitor, MonitorLog monitorLog) {
-        StringBuilder mas = new StringBuilder();
-        StringBuilder result = new StringBuilder();
-        String state = null;
+    private void performMonitor(ApplicationMonitor applicationMonitor, List<MonitorLog> monitorLogs) {
         Integer http = applicationMonitor.getHttp();
         Integer telnet = applicationMonitor.getTelnet();
         if (ParamEnum.yesOrNo.yes.getCode().equals( telnet )) {
             Integer telnetPort = applicationMonitor.getAppPort();
             String serverIp = applicationMonitor.getServerDetail().getIp();
-            boolean telnetPortState = PingUtils.tcpPing( serverIp, telnetPort );
-            if (!telnetPortState) {
-                mas.append( "telnetPing异常,异常ip:" ).append( serverIp ).append( "异常端口:" ).append( telnetPort ).append( "; " );
-                state = ParamEnum.yesOrNo.no.getCode().toString();
-            }
+            MonitorLog monitorLog = getTelnetPingLog( applicationMonitor.getObjId(), serverIp, telnetPort );
+            monitorLogs.add(monitorLog);
         }
         if (ParamEnum.yesOrNo.yes.getCode().equals( http )) {
+            MonitorLog monitorLog = new MonitorLog();
+            monitorLog.setNodeId( BasisServiceImpl.nodeId  );
+            monitorLog.setMonitorId( applicationMonitor.getObjId() );
+            StringBuilder mas = new StringBuilder();
+            StringBuilder result = new StringBuilder();
+            String state = null;
+
             String url = applicationMonitor.getUrl();
             String httpResult = PowerUtil.getString( applicationMonitor.getHttpResult() ) ;
             Integer httpTimeout = applicationMonitor.getHttpTimeout();
             String httpStrTemp = null;
+
             try {
                 httpStrTemp = PowerUtil.getString( HttpUtil.get( url, null, httpTimeout ));
                 if (!httpStrTemp.contains( httpResult )) {
@@ -267,12 +273,49 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 mas.append( "http访问异常" ).append( "; " );
                 result.append( new StringBuilder( "http访问异常,访问地址:").append( url ).append(";异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             }
+            state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
+            monitorLog.setStatus( state );
+            monitorLog.setMsg( mas.toString() );
+            monitorLog.setResult( result.toString() );
+            monitorLogs.add(monitorLog);
         }
-        state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
-        monitorLog.setStatus( state );
+
+    }
+
+
+    /**
+     * @description  进行TelnetPing监控获取MonitorLog日志
+     * @param  objId  节点id
+     * @param  ip  监控ip
+     * @param  telnetPort  监控端口
+     * @return
+     * @date  20/08/10 9:52
+     * @author  wanghb
+     * @edit
+     */
+    public MonitorLog getTelnetPingLog(String objId, String ip, int telnetPort) {
+        MonitorLog monitorLog = new MonitorLog();
+        monitorLog.setNodeId( BasisServiceImpl.nodeId  );
+        monitorLog.setMonitorId( objId );
+        StringBuilder mas = new StringBuilder();
+        StringBuilder result = new StringBuilder();
+        String state = null;
+        try {
+            boolean telnetPortState = PingUtils.tcpPing( ip, telnetPort );
+            if (!telnetPortState) {
+                mas.append( "telnetPing异常,异常ip:" ).append( ip ).append( "异常端口:" ).append( telnetPort ).append( "; " );
+                state = ParamEnum.yesOrNo.no.getCode().toString();
+            }
+        } catch (Exception e) {
+            mas.append( "监控异常" ).append( "; " );
+            result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
+            logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
+            state = ParamEnum.yesOrNo.no.getCode().toString();
+        }
+        monitorLog.setStatus( state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state );
         monitorLog.setMsg( mas.toString() );
         monitorLog.setResult( result.toString() );
-
+        return monitorLog;
     }
 
 
