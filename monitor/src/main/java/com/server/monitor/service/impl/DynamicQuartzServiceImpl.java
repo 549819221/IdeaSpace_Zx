@@ -126,14 +126,15 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             ApplicationMonitor applicationMonitor = MapUtil.toBean( monitorTemp, ApplicationMonitor.class );
             performMonitor( applicationMonitor, monitorLogs );
         }
-        try {
-            for (MonitorLog monitorLog : monitorLogs) {
+        for (MonitorLog monitorLog : monitorLogs) {
+            try {
                 HttpUtil.post( new StringBuffer( basisUrL ).append( BasisServiceImpl.logSaveUrL ).toString(), monitorLog );
+            } catch (Exception e) {
+                logger.error( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            logger.error( new StringBuilder( "日志发送异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-            e.printStackTrace();
         }
+
     }
 
     /**
@@ -175,8 +176,6 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             MonitorLog monitorLog = getTelnetPingLog( serverMonitor.getObjId(), ip, telnetPort );
             monitorLogs.add(monitorLog);
         }
-
-
     }
 
 
@@ -260,7 +259,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 httpStrTemp = PowerUtil.getString( HttpUtil.get( url, null, httpTimeout ));
                 if (!httpStrTemp.contains( httpResult )) {
                     state = ParamEnum.yesOrNo.no.getCode().toString();
-                    mas.append( "http接口返回结果不一致" ).append( "; " );
+                    mas.append( "http接口返回结果不一致" ).append( ";  " );
                     result.append( new StringBuilder( "http接口返回结果不一致,参考值:" ).append( httpResult ).append( ",实际返回值:" ).append( httpStrTemp ).toString()  );
                 }
             } catch (ConnectTimeoutException e) {
