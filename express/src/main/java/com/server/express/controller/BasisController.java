@@ -47,6 +47,4 @@ public class BasisController  {
         basisService.dataUpload(uploadDataInfo);
     }
 
-
-
 }

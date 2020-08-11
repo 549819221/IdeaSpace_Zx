@@ -9,7 +9,7 @@ import com.server.express.entity.UploadDataInfo;
  * @since 2020-07-10 14:43:45
  */
 public interface BasisService  {
-    public void dataUpload(UploadDataInfo uploadDataInfo);
-    public void getToken();
+    void dataUpload(UploadDataInfo uploadDataInfo);
+    void getToken();
 
 }
