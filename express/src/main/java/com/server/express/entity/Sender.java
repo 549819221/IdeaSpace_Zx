@@ -1,19 +1,20 @@
-package com.server.express;
-
-/*** 收件人信息 */
-public class Receiver {
+package com.server.express.entity;
+/*** 寄件人信息 */
+public class Sender {
     /*** 姓名 */
     private String username;
     /*** 手机号 */
     private String phone;
-    /*** 收件区号 */
+    /*** 寄件区号 */
     private String cityCode;
     /*** 民族 */
     private String nation;
     /*** 性别 */
     private int gender;
-    /*** 收件人证件类型 */
+    /*** 寄件人证件类型 */
     private int idcardType;
+    /*** 证件号 */
+    private String idcardNo;
     /*** 邮编 */
     private String postalCode;
     /*** 地址 */
@@ -67,6 +68,14 @@ public class Receiver {
         this.idcardType = idcardType;
     }
 
+    public String getIdcardNo() {
+        return idcardNo;
+    }
+
+    public void setIdcardNo(String idcardNo) {
+        this.idcardNo = idcardNo;
+    }
+
     public String getPostalCode() {
         return postalCode;
     }
@@ -82,4 +91,4 @@ public class Receiver {
     public void setAddress(String address) {
         this.address = address;
     }
-} 
+}

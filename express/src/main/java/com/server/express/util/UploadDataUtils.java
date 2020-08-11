@@ -1,9 +1,19 @@
-package com.server.express;
+package com.server.express.util;
 import com.alibaba.fastjson.JSON;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.*;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import com.server.express.entity.*;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class UploadDataUtils {
     
@@ -17,7 +27,7 @@ public class UploadDataUtils {
      */
     public static final UploadDataResult uploadData(List<ExpressInfo> expressInfoList) throws IOException {
 
-        byte[] encryptBytes = encrypt(expressInfoList);
+        byte[] encryptBytes = null;
         // 生成最终的数据包
         File data = packData(encryptBytes);
         String keyId = "";
@@ -92,7 +102,7 @@ public class UploadDataUtils {
      */
     private static File packData(byte[] encryptBytes) throws IOException {
         String  fileType = "txt";
-        File resultFile = File.createTempFile(UUID.randomUUID().toString(), '.' + fileType, Files.createTempDirectory("tempFile").toFile());
+        File resultFile = File.createTempFile( UUID.randomUUID().toString(), '.' + fileType, Files.createTempDirectory("tempFile").toFile());
         resultFile.deleteOnExit();
         FileUtils.copyToFile(new ByteArrayInputStream(encryptBytes), resultFile);
         return resultFile;
@@ -100,17 +110,26 @@ public class UploadDataUtils {
 
 
     /**
-     * @description  数据加密方法
-     * @param  expressInfoList
-     * @return  加密返回字节数组，根据后续上传接口将数组转换成文件形式（计划使用 FastDFS）
-     * @date  20/07/31 17:18
+     * @description  加密方法
+     * @param  sSrc  sSrc           内容
+     * @param  encodingFormat  编码
+     * @param  sKey  加密用的key
+     * @return
+     * @date  20/08/11 10:42
      * @author  wanghb
      * @edit
      */
-    public static byte[] encrypt(List<ExpressInfo> expressInfoList){
-        byte[] expressBytes = JSON.toJSONString( expressInfoList ).getBytes();
-        return expressBytes;
-    };
+    public static String encrypt(String sSrc, String encodingFormat, String sKey) throws GeneralSecurityException, UnsupportedEncodingException {
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        byte[] raw = sKey.getBytes(encodingFormat);
+        byte[] ivp = raw;
+        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+        IvParameterSpec iv = new IvParameterSpec(ivp);//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        byte[] encrypted = cipher.doFinal(sSrc.getBytes(encodingFormat));
+        return Base64.encodeBase64String(encrypted);//此处使用BASE64做转码。
+    }
 
 
     public static void main(String[] args) throws IOException {

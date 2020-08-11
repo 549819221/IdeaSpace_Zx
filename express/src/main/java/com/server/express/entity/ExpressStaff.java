@@ -1,4 +1,4 @@
-package com.server.express;
+package com.server.express.entity;
 
 /*** 快递员信息 */
 public class ExpressStaff {

@@ -1,4 +1,4 @@
-package com.server.express;
+package com.server.express.entity;
 
 import java.util.Date;
 
