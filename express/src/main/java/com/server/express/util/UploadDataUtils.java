@@ -111,7 +111,7 @@ public class UploadDataUtils {
 
     /**
      * @description  加密方法
-     * @param  sSrc  sSrc           内容
+     * @param  sSrc  sSrc  内容
      * @param  encodingFormat  编码
      * @param  sKey  加密用的key
      * @return
@@ -163,6 +163,7 @@ public class UploadDataUtils {
             expressInfoList.add(expressInfo);
                         
         }
-        uploadData(expressInfoList);
+        System.out.println(UUID.randomUUID().toString().replace( "-","" ));
+        //uploadData(expressInfoList);
     }
 }

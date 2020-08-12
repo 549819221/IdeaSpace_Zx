@@ -32,7 +32,7 @@ public interface ParamEnum {
             this.name = name;
         }
         public static String getNameByCode(String code) {
-            for (systemType item : systemType.values()) {
+            for (Status item : Status.values()) {
                 if (item.getCode().equals(code)) {
                     return item.getName();
                 }
@@ -61,7 +61,7 @@ public interface ParamEnum {
             this.name = name;
         }
         public static String getNameByCode(String code) {
-            for (systemType item : systemType.values()) {
+            for (operate item : operate.values()) {
                 if (item.getCode().equals(code)) {
                     return item.getName();
                 }
@@ -91,7 +91,7 @@ public interface ParamEnum {
             this.name = name;
         }
         public static String getNameByCode(String code) {
-            for (systemType item : systemType.values()) {
+            for (yesOrNo item : yesOrNo.values()) {
                 if (item.getCode().equals(code)) {
                     return item.getName();
                 }

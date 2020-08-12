@@ -1,24 +1,36 @@
 package com.server.express.util;
 
 import com.alibaba.fastjson.JSON;
-import com.server.express.service.impl.BasisServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Map;
 
 /**
  * Httpclient工具类
- * @author zyq
+ * @author wanghb
  * @date 2019-04-22
  */
 public class HttpUtil {
@@ -88,7 +100,7 @@ public class HttpUtil {
      * @edit
      */
     public static Map<String, Object> post(String urlPath,Object params) throws IOException {
-        Boolean isPrintln = true;
+        Boolean isPrintln = false;
         if(isPrintln){
             logger.info("post请求路径===>"+urlPath);
             logger.info("post请求参数===>"+JSON.toJSONString( params ));
@@ -132,6 +144,71 @@ public class HttpUtil {
         }
         return resultMaps;
     }
+
+    public static String postFile(String url,InputStream is,String name,Map<String,String> params){
+        CloseableHttpClient httpClient = null;
+        CloseableHttpResponse response = null;
+        try {
+            httpClient = HttpClients.createDefault();
+            // 把一个普通参数和文件上传给下面这个地址 是一个servlet
+            HttpPost httpPost = new HttpPost(url);
+            MultipartEntityBuilder meb = MultipartEntityBuilder.create();
+            if(params != null){
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    meb.addPart(entry.getKey(), new StringBody(entry.getValue(), ContentType.create(
+                            "text/plain", Consts.UTF_8)));
+                }
+            }
+            // 把文件转换成流对象FileBody
+            InputStreamBody isb = new InputStreamBody(is, name);
+            HttpEntity reqEntity = null;
+            if(is != null){
+                reqEntity = meb
+                        // 相当于<input type="file" name="file"/>
+                        //                    .addPart("file", bin)
+                        .addPart("file", isb)
+                        /* // 相当于<input type="text" name="userName" value=userName>
+                         .addPart("userName", userName)
+                         .addPart("pass", password)*/
+                        .build();
+            }else{
+                reqEntity = meb.build();
+            }
+            httpPost.setEntity(reqEntity);
+            RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(5000).build();//设置请求和传输超时时间
+            httpPost.setConfig(requestConfig);
+            // 发起请求 并返回请求的响应
+            response = httpClient.execute(httpPost);
+
+
+            // 获取响应对象
+            HttpEntity resEntity = response.getEntity();
+            String res = "";
+            if (resEntity != null) {
+                res = EntityUtils.toString(resEntity, Charset.forName("UTF-8"));
+            }
+
+            // 销毁
+            EntityUtils.consume(resEntity);
+            return res;
+        }catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }finally {
+            try {
+                if(response != null){
+                    response.close();
+                }
+                if(httpClient != null){
+                    httpClient.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
 
     /**
      * @description  将map转换成url
@@ -217,10 +294,10 @@ public class HttpUtil {
     public static String getHostIp() throws SocketException {
         Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
         while (allNetInterfaces.hasMoreElements()){
-            NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+            NetworkInterface netInterface = allNetInterfaces.nextElement();
             Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
             while (addresses.hasMoreElements()){
-                InetAddress ip = (InetAddress) addresses.nextElement();
+                InetAddress ip = addresses.nextElement();
                 if (ip != null
                         && ip instanceof Inet4Address
                         && !ip.isLoopbackAddress() //loopback地址即本机地址，IPv4的loopback范围是127.0.0.0 ~ 127.255.255.255

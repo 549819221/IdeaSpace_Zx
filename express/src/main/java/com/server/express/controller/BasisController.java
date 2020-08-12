@@ -1,12 +1,14 @@
 package com.server.express.controller;
 
+import com.server.express.entity.TokenResult;
 import com.server.express.entity.UploadDataInfo;
+import com.server.express.entity.User;
 import com.server.express.service.BasisService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * (Basis)表控制层
@@ -28,10 +30,10 @@ public class BasisController  {
      * @author  wanghb
      * @edit
      */
-    @GetMapping("/getToken")
+    @PostMapping("/getToken")
     @ResponseBody
-    public void getToken(){
-        basisService.getToken();
+    public TokenResult getToken(@RequestBody User user, HttpServletRequest request){
+        return basisService.getToken(user,request);
     }
 
     /**
@@ -43,8 +45,9 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload")
     @ResponseBody
-    public void dataUpload(@RequestBody UploadDataInfo uploadDataInfo){
-        basisService.dataUpload(uploadDataInfo);
+    public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo){
+        Object obj = basisService.dataUpload(uploadDataInfo);
+        return obj;
     }
 
 }

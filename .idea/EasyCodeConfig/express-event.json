@@ -1,0 +1,26 @@
+{
+  "name" : "Event",
+  "preName" : "",
+  "comment" : null,
+  "templateGroupName" : "Jpa",
+  "fullColumn" : [ {
+    "name" : "objId",
+    "comment" : null,
+    "type" : null,
+    "shortType" : null,
+    "custom" : false,
+    "ext" : { }
+  }, {
+    "name" : "event",
+    "comment" : null,
+    "type" : null,
+    "shortType" : null,
+    "custom" : false,
+    "ext" : { }
+  } ],
+  "pkColumn" : null,
+  "otherColumn" : null,
+  "savePackageName" : "com.server.express",
+  "savePath" : "./express/src/main/java/com/server/express",
+  "saveModelName" : "express"
+}

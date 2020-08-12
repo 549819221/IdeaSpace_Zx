@@ -1,6 +1,7 @@
 package com.server.express.entity;
 
 public class UploadDataResult {
+
     // 返回结果内容，errcode 为 0 标识上报成功，其他的均为异常结果，需要查看数据内容 
     String errcode = ""; 
     String errmsg = ""; 

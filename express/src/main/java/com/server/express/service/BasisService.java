@@ -1,7 +1,11 @@
 package com.server.express.service;
 
 
+import com.server.express.entity.TokenResult;
 import com.server.express.entity.UploadDataInfo;
+import com.server.express.entity.User;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * (Basis)表服务接口
@@ -9,7 +13,7 @@ import com.server.express.entity.UploadDataInfo;
  * @since 2020-07-10 14:43:45
  */
 public interface BasisService  {
-    void dataUpload(UploadDataInfo uploadDataInfo);
-    void getToken();
+    Object dataUpload(UploadDataInfo uploadDataInfo);
+    TokenResult getToken(User user, HttpServletRequest request);
 
 }
