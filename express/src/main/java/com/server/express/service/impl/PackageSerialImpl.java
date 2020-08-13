@@ -1,8 +1,8 @@
-package com.example.demo.service.impl;
+package com.server.express.service.impl;
 
-import com.example.demo.dao.EventDao;
-import com.example.demo.entity.EventInfo;
-import com.example.demo.service.EventService;
+import com.server.express.dao.PackageSerialDao;
+import com.server.express.entity.PackageSerialInfo;
+import com.server.express.service.PackageSerialService;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -11,19 +11,19 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * (Event)表服务实现类
+ * (PackageSerial)表服务实现类
  *
  * @author wanghb
  * @since 2020-08-12 17:55:46
  */
 @Repository
-public class EventServiceImpl implements EventService {
+public class PackageSerialImpl implements PackageSerialService {
     @Resource
-    private EventDao eventDao;
+    private PackageSerialDao packageSerialDao;
 
 
     /**
-     * @param eventInfo 实体
+     * @param packageSerialInfo 实体
      * @return 无返回值
      * @description 保存
      * @date 2020-08-12 17:55:46
@@ -31,8 +31,8 @@ public class EventServiceImpl implements EventService {
      * @edit
      */
     @Override
-    public void save(EventInfo eventInfo) {
-        eventDao.save( eventInfo );
+    public void save(PackageSerialInfo packageSerialInfo) {
+        packageSerialDao.save( packageSerialInfo );
     }
 
 
@@ -45,9 +45,9 @@ public class EventServiceImpl implements EventService {
      * @edit
      */
     @Override
-    public EventInfo view(String id) {
-        Optional<EventInfo> eventEntity = eventDao.findById( id );
-        return eventEntity.isPresent() ? eventEntity.get() : null;
+    public PackageSerialInfo view(String id) {
+        Optional<PackageSerialInfo> packageSerialEntity = packageSerialDao.findById( id );
+        return packageSerialEntity.isPresent() ? packageSerialEntity.get() : null;
     }
 
 
@@ -61,7 +61,7 @@ public class EventServiceImpl implements EventService {
      */
     @Override
     public void delete(String id) {
-        eventDao.deleteById( id );
+        packageSerialDao.deleteById( id );
     }
 
     /**

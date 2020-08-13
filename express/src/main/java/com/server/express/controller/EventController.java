@@ -50,7 +50,7 @@ public class EventController {
     @ResponseBody
     public EventInfo view(@RequestParam(name = "id", required = true) String id) {
         EventInfo eventInfo = eventService.view( id );
-        return eventInfo;
+        return null;
     }
 
 

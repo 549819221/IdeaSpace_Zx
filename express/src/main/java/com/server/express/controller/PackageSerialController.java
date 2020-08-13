@@ -1,30 +1,30 @@
-package com.example.demo.controller;
+package com.server.express.controller;
 
-import com.example.demo.entity.EventInfo;
-import com.example.demo.service.EventService;
+import com.server.express.entity.PackageSerialInfo;
+import com.server.express.service.PackageSerialService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * (Event)表控制层
+ * (PackageSerial)表控制层
  *
  * @author wanghb
  * @since 2020-08-12 17:55:45
  */
 @RestController
-@RequestMapping("/api/event")
-public class EventController {
+@RequestMapping("/api/packageSerial")
+public class PackageSerialController {
     /**
      * 服务对象
      */
     @Resource
-    private EventService eventService;
+    private PackageSerialService packageSerialService;
 
 
     /**
-     * @param eventInfo 实体
+     * @param packageSerialInfo 实体
      * @return 无返回值
      * @description 保存
      * @date 2020-08-12 17:55:45
@@ -33,8 +33,8 @@ public class EventController {
      */
     @PostMapping("/save")
     @ResponseBody
-    public void save(@RequestBody EventInfo eventInfo) {
-        //eventService.save( eventInfo );
+    public void save(@RequestBody PackageSerialInfo packageSerialInfo) {
+        //packageSerialService.save( packageSerialInfo );
     }
 
 
@@ -48,8 +48,8 @@ public class EventController {
      */
     @GetMapping("/view")
     @ResponseBody
-    public EventInfo view(@RequestParam(name = "id", required = true) String id) {
-        //EventInfo eventInfo = eventService.view( id );
+    public PackageSerialInfo view(@RequestParam(name = "id", required = true) String id) {
+        PackageSerialInfo packageSerialInfo = packageSerialService.view( id );
         return null;
     }
 
@@ -65,7 +65,7 @@ public class EventController {
     @GetMapping("/delete")
     @ResponseBody
     public void delete(@RequestParam(name = "id", required = true) String id) {
-        //eventService.delete( id );
+        //packageSerialService.delete( id );
     }
 
     /**
@@ -79,6 +79,6 @@ public class EventController {
     @PostMapping("/batchDelete")
     @ResponseBody
     public void batchDelete(@RequestBody List<String> ids) {
-        //eventService.batchDelete( ids );
+        //packageSerialService.batchDelete( ids );
     }
 }
