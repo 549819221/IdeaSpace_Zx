@@ -18,27 +18,27 @@ public class EventInfo implements Serializable {
     //主键，包流水号
     @Id
     @Column(name = "obj_id")
-    private String bjId;
+    private String objId;
 
     //事件情况：0.尚未通知事件；1.已通知事件未完成事件；2.已通知已完成事件
     @Basic
     @Column(name = "event")
-    private String vent;
+    private String event;
 
 
-    public String getBjId() {
-        return bjId;
+    public String getObjId() {
+        return objId;
     }
 
-    public void setBjId(String bjId) {
-        this.bjId = bjId;
+    public void setObjId(String bjId) {
+        this.objId = bjId;
     }
 
-    public String getVent() {
-        return vent;
+    public String getEvent() {
+        return event;
     }
 
-    public void setVent(String vent) {
-        this.vent = vent;
+    public void setEvent(String vent) {
+        this.event = vent;
     }
 }

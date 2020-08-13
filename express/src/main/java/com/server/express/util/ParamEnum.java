@@ -67,6 +67,98 @@ public interface ParamEnum {
         }
     }
 
+    /**
+     * 上传结果
+     * @author wanghb
+     */
+    enum resultStatus {
+        status0( "0","上传成功未入库"),
+        status1( "1","上传成功已入库"),
+        status2( "2","上传成功入库失败"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        resultStatus(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (resultStatus item : resultStatus.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+
+    /**
+     * 事件情况：0.尚未通知事件；1.已通知事件未完成事件；2.已通知已完成事件
+     * @author wanghb
+     */
+    enum eventStatus {
+        status0( "0","尚未通知事件"),
+        status1( "1","已通知事件未完成事件"),
+        status2( "2","已通知已完成事件"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        eventStatus(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (eventStatus item : eventStatus.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+
+    /**
+     * 0.FastDFS中文件未删除；1.FastDFS中文件已删除
+     * @author wanghb
+     */
+    enum fastdfsStatus {
+        status0( "0","FastDFS中文件未删除"),
+        status1( "1","FastDFS中文件已删除"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        fastdfsStatus(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (fastdfsStatus item : fastdfsStatus.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+
 
 }
 

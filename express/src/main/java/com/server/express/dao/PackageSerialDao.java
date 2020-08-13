@@ -14,4 +14,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PackageSerialDao extends JpaRepository<PackageSerialInfo, String> {
 
+    int countBySerial(String serial);
 }
