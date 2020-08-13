@@ -13,12 +13,14 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "event", schema = "express")
-@MappedSuperclass
-public class EventInfo extends EventInfoAbstract implements Serializable {
+@EntityListeners(AuditingEntityListener.class)
+public class EventInfo implements Serializable {
+    //主键，包流水号
     @Id
     @Column(name = "obj_id")
     private String bjId;
 
+    //事件情况：0.尚未通知事件；1.已通知事件未完成事件；2.已通知已完成事件
     @Basic
     @Column(name = "event")
     private String vent;

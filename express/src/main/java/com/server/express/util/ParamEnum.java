@@ -40,7 +40,10 @@ public interface ParamEnum {
      * @author wanghb
      */
     enum resultCode {
-        success( "0","请求成功"),
+        success( "0","成功"),
+        error( "-1","失败"),
+        tokenExpired( "1003","token过期"),
+        paramError( "400","参数异常"),
         ;
         private String code;
         private String name;

@@ -20,7 +20,7 @@ public class EventController {
      * 服务对象
      */
     @Resource
-    private  EventService eventService;
+    private EventService eventService;
 
 
     /**
@@ -49,8 +49,8 @@ public class EventController {
     @GetMapping("/view")
     @ResponseBody
     public EventInfo view(@RequestParam(name = "id", required = true) String id) {
-        //EventInfo eventInfo = eventService.view( id );
-        return null;
+        EventInfo eventInfo = eventService.view( id );
+        return eventInfo;
     }
 
 

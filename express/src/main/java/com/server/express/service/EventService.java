@@ -12,7 +12,7 @@ import java.util.List;
  * @since 2020-08-12 17:55:45
  */
 @Service("eventService")
-public interface EventService  {
+public interface EventService {
 
     void save(EventInfo eventInfo);
 

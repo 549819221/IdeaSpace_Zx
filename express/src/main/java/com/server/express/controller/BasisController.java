@@ -2,10 +2,9 @@ package com.server.express.controller;
 
 import com.server.express.entity.TokenResult;
 import com.server.express.entity.UploadDataInfo;
+import com.server.express.entity.UploadDataResult;
 import com.server.express.entity.User;
 import com.server.express.service.BasisService;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/basis")
-@SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})
 public class BasisController  {
 
     @Resource

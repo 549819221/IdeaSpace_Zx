@@ -3,6 +3,7 @@ package com.server.express.service;
 
 import com.server.express.entity.TokenResult;
 import com.server.express.entity.UploadDataInfo;
+import com.server.express.entity.UploadDataResult;
 import com.server.express.entity.User;
 
 import javax.servlet.http.HttpServletRequest;

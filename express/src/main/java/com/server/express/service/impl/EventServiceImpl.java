@@ -4,7 +4,6 @@ import com.server.express.dao.EventDao;
 import com.server.express.entity.EventInfo;
 import com.server.express.service.EventService;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
@@ -20,7 +19,7 @@ import java.util.Optional;
 @Repository
 public class EventServiceImpl implements EventService {
     @Resource
-    private  EventDao eventDao;
+    private EventDao eventDao;
 
 
     /**

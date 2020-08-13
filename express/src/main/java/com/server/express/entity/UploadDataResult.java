@@ -7,6 +7,12 @@ public class UploadDataResult {
     String errmsg = ""; 
     String data = "";
 
+    public UploadDataResult(String errcode,String errmsg,String data){
+        this.errcode = errcode;
+        this.errmsg = errmsg;
+        this.data = data;
+    }
+
     public String getErrcode() {
         return errcode;
     }
