@@ -3,6 +3,7 @@ package com.server.express.service.impl;
 import com.server.express.dao.EventDao;
 import com.server.express.entity.EventInfo;
 import com.server.express.service.EventService;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -16,15 +17,10 @@ import java.util.Optional;
  * @author wanghb
  * @since 2020-08-12 17:55:46
  */
-@Service("eventService")
-public class EventServiceImpl  implements EventService {
+@Repository
+public class EventServiceImpl implements EventService {
     @Resource
-    private final EventDao eventDao;
-
-    public EventServiceImpl(EventDao eventDao) {
-        this.eventDao = eventDao;
-    }
-
+    private  EventDao eventDao;
 
 
     /**
@@ -80,7 +76,6 @@ public class EventServiceImpl  implements EventService {
     @Override
     @Transactional
     public void batchDelete(List<String> ids) {
-        eventDao.batchDelete( ids );
     }
 
 }

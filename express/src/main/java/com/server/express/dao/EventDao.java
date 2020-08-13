@@ -21,12 +21,6 @@ import java.util.List;
  * @since 2020-08-12 17:55:44
  */
 @Repository
-public interface EventDao extends JpaRepository<EventInfo, String>, JpaSpecificationExecutor<EventInfo> {
-    @Override
-    Page<EventInfo> findAll(Specification<EventInfo> specification, Pageable pageable);
+public interface EventDao extends JpaRepository<EventInfo, String> {
 
-    @Transactional
-    @Modifying
-    @Query("delete  from EventInfo a where  a.id in (:ids) ")
-    void batchDelete(List<String> ids);
 }

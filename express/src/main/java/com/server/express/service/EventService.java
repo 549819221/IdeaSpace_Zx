@@ -1,6 +1,7 @@
 package com.server.express.service;
 
 import com.server.express.entity.EventInfo;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @author wanghb
  * @since 2020-08-12 17:55:45
  */
+@Service("eventService")
 public interface EventService  {
 
     void save(EventInfo eventInfo);

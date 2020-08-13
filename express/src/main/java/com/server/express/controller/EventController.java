@@ -20,18 +20,7 @@ public class EventController {
      * 服务对象
      */
     @Resource
-    private final EventService eventService;
-
-    /**
-     * @param eventService 服务类
-     * @description 构造方法  注入必要的属性值
-     * @author wanghb
-     * @edit
-     * @since 2020-08-12 17:55:45
-     */
-    public EventController(EventService eventService) {
-        this.eventService = eventService;
-    }
+    private  EventService eventService;
 
 
     /**

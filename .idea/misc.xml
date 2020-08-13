@@ -8,6 +8,7 @@
       <list>
         <option value="$PROJECT_DIR$/express/pom.xml" />
         <option value="$PROJECT_DIR$/monitor/pom.xml" />
+        <option value="$PROJECT_DIR$/demo/pom.xml" />
       </list>
     </option>
   </component>
