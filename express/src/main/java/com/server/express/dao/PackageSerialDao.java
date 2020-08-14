@@ -16,7 +16,7 @@ import java.util.List;
 /**
 * 包流水信息( PackageSerialDao )Dao类
 * @author wanghb
-* @since 2020-8-14 11:25:52
+* @since 2020-8-14 13:54:48
 */
 @Repository
 public interface PackageSerialDao extends JpaRepository<PackageSerialInfo, String>, JpaSpecificationExecutor<PackageSerialInfo> {
@@ -29,4 +29,5 @@ public interface PackageSerialDao extends JpaRepository<PackageSerialInfo, Strin
     void batchDelete(List<String> ids);
 
     int countBySerial(String serial);
-}                
+
+}

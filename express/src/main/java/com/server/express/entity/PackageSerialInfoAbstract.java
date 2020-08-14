@@ -14,12 +14,12 @@ import io.swagger.annotations.ApiModelProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
-* 包流水信息( PackageSerialEntityAbstract )实体抽象类
+* 包流水信息( PackageSerialInfoAbstract )实体抽象类
 * @author wanghb
-* @since 2020-8-14 11:25:52
+* @since 2020-8-14 13:54:48
 */
 @MappedSuperclass
-@ApiModel(description= "包流水信息( PackageSerialEntityAbstract )实体")
+@ApiModel(description= "包流水信息( PackageSerialInfoAbstract )实体")
 public class PackageSerialInfoAbstract implements Serializable {
 
     @Id
