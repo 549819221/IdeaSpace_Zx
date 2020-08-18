@@ -59,8 +59,6 @@ public class JwtUtil {
             Algorithm algorithm = Algorithm.HMAC256( TOKEN_SECRET );
             JWTVerifier verifier = JWT.require( algorithm ).build();
             DecodedJWT jwt = verifier.verify( token );
-
-            System.out.println( jwt.getClaim( "account" ).asString() );
             return true;
         } catch (Exception exception) {
             return false;

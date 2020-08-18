@@ -1,6 +1,5 @@
 package com.server.express.util;
 
-import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
@@ -92,6 +91,7 @@ public class FileEncryptUtil {
     public static String getPackageSerialInfo(File tempFile,String encode) throws ZipException, IOException {
         ZipInputStream inputStream = null;
         InputStreamReader inputStreamReader = null;
+        BufferedReader reader = null;
         try {
             ZipFile zipFile2 = new ZipFile(tempFile);
             //设置编码格式
@@ -107,7 +107,7 @@ public class FileEncryptUtil {
             FileHeader fileHeader = fileHeaderList.get(0);
             inputStream = zipFile2.getInputStream( fileHeader );
             inputStreamReader = new InputStreamReader( inputStream );
-            BufferedReader reader = new BufferedReader(inputStreamReader);
+            reader = new BufferedReader(inputStreamReader);
             StringBuffer json = new StringBuffer();
             String line;
             while ( ( line = reader.readLine() ) != null) {
@@ -118,6 +118,8 @@ public class FileEncryptUtil {
             if (inputStream != null) {
                 inputStream.close();
             }
+            inputStreamReader = null;
+            reader = null;
 
         }
     }

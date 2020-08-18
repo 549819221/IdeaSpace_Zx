@@ -113,27 +113,24 @@ public class BasisServiceImpl implements BasisService {
         }else{
             //FTP的上传方式
             //为临时文件名称添加前缀和后缀
-            /*File temp = File.createTempFile("pattern",".txt");
+            File temp = File.createTempFile("ftp",".txt");
             System.out.println("临时文件名称为："+temp.getName());
             //在退出时删除
             temp.deleteOnExit();
             //在临时文件中写入内容
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(temp));
-            System.out.println(JSON.toJSONString(uploadDataInfo));
             bufferedWriter.write( JSON.toJSONString(uploadDataInfo));
             bufferedWriter.close();
-
-            File tempZip = File.createTempFile("pattern",".zip");
+            File tempZip = File.createTempFile("ftp",".zip");
             //在退出时删除
             tempZip.deleteOnExit();
-            System.out.println("临时文件名称为："+tempZip.getName());
             FileEncryptUtil.encryptStreamZip(temp,tempZip,zipEncode);
             //文件上传
-            System.out.println( fTPUtil.uploadFile( "/test", tempZip ) );*/
+            fTPUtil.uploadFile( "/test", tempZip );
+            System.out.println(temp.delete());
+            System.out.println(tempZip.delete());
             //文件解析
-            List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
-            UploadDataInfo uploadDataTemp = dateList.get( 3 );
-            System.out.println(JSON.toJSONString( uploadDataTemp ));
+            //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
             //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
             //FastDFS的上传方式
             /*try {

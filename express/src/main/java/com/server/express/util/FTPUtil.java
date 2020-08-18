@@ -1,15 +1,10 @@
 package com.server.express.util;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-
 import com.alibaba.fastjson.JSON;
-import com.server.express.entity.PackageSerialInfo;
 import com.server.express.entity.UploadDataInfo;
-import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.net.ftp.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +65,7 @@ public class FTPUtil {
      * @edit
      */
     public boolean uploadFile(String path,File file) throws IOException{
+        FileInputStream fileInputStream = null;
         try {
             if(!login()){
                 return false;
@@ -83,11 +79,13 @@ public class FTPUtil {
                 ftp.changeWorkingDirectory(pathTemp);
             }
             String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), FTP.DEFAULT_CONTROL_ENCODING );
-            FileInputStream fileInputStream = new FileInputStream( file );
+            fileInputStream = new FileInputStream( file );
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
-            fileInputStream.close();
             return isSuccess;
         } finally {
+            if (fileInputStream != null) {
+                fileInputStream.close();
+            }
             closeClient();
         }
     }
@@ -145,8 +143,6 @@ public class FTPUtil {
      */
     public List<UploadDataInfo> getDateList(String fpath) throws IOException, ZipException {
         List<UploadDataInfo> uploadDataInfos = new ArrayList<>();
-        BufferedOutputStream bufferRead = null;
-        FileOutputStream fileOutputStream = null;
         if(!login()){
             return uploadDataInfos;
         }
@@ -158,10 +154,11 @@ public class FTPUtil {
                 ftp.enterLocalActiveMode();
                 FTPFile [] ftpFiles = ftp.listFiles();
                 for (FTPFile file : ftpFiles) {
+                    BufferedOutputStream bufferRead = null;
+                    FileOutputStream fileOutputStream = null;
                     if (file.isFile()) {
                         String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
-                        System.out.println(fileName);
-                        File localFile = File.createTempFile("pattern",".zip");
+                        File localFile = File.createTempFile("ftp",".zip");
                         localFile.deleteOnExit();
                         fileOutputStream = new FileOutputStream( localFile );
                         bufferRead = new BufferedOutputStream( fileOutputStream );
@@ -169,7 +166,12 @@ public class FTPUtil {
                         bufferRead.flush();
                         String packageSerialJson = FileEncryptUtil.getPackageSerialInfo( localFile,zipEncode );
                         uploadDataInfos.add( JSON.parseObject(packageSerialJson, UploadDataInfo.class) );
-                        //删除临时文件
+                        if (bufferRead != null) {
+                            bufferRead.close();
+                        }
+                        if (fileOutputStream != null) {
+                            fileOutputStream.close();
+                        }
                         localFile.delete();
                     }
                 }
@@ -177,12 +179,6 @@ public class FTPUtil {
             }
             return uploadDataInfos;
         }finally{
-            if (bufferRead != null) {
-                bufferRead.close();
-            }
-            if (fileOutputStream != null) {
-                fileOutputStream.close();
-            }
             closeClient();
         }
 
