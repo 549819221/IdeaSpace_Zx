@@ -5,8 +5,10 @@ import com.server.express.entity.TokenResult;
 import com.server.express.entity.UploadDataInfo;
 import com.server.express.entity.UploadDataResult;
 import com.server.express.entity.User;
+import net.lingala.zip4j.exception.ZipException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * (Basis)表服务接口
@@ -14,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2020-07-10 14:43:45
  */
 public interface BasisService  {
-    Object dataUpload(UploadDataInfo uploadDataInfo);
+    Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException;
     TokenResult getToken(User user, HttpServletRequest request);
 
 }

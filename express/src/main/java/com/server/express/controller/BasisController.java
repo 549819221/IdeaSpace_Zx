@@ -5,9 +5,11 @@ import com.server.express.entity.UploadDataInfo;
 import com.server.express.entity.UploadDataResult;
 import com.server.express.entity.User;
 import com.server.express.service.BasisService;
+import net.lingala.zip4j.exception.ZipException;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * (Basis)表控制层
@@ -43,7 +45,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload")
     @ResponseBody
-    public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo){
+    public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo) throws IOException, ZipException {
         Object obj = basisService.dataUpload(uploadDataInfo);
         return obj;
     }

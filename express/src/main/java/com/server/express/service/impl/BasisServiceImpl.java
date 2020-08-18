@@ -5,6 +5,7 @@ import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
 import com.server.express.util.*;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.*;
@@ -33,8 +35,14 @@ public class BasisServiceImpl implements BasisService {
     //private static String dataUploadUrl= "http://app4.zyxlgx.top:9090/delivery/dataUpload";
     @Value("${spring.profiles.active}")
     private String active;
+
     @Value("${dataUploadUrl}")
     private String dataUploadUrl;
+
+
+    @Resource
+    private FTPUtil fTPUtil;
+
 
     @Autowired
     private PackageSerialDao packageSerialDao;
@@ -50,8 +58,9 @@ public class BasisServiceImpl implements BasisService {
      */
     @Override
     @Transactional
-    public Object dataUpload(UploadDataInfo uploadDataInfo) {
+    public Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException {
 
+        //fTPUtil.uploadFile("/test",new File( "C:\\Users\\Administrator\\Desktop\\图片.png" ));
         String encryptData = uploadDataInfo.getEncryptData();
         String accountNo = uploadDataInfo.getAccountNo();
         String serial = uploadDataInfo.getSerial();
@@ -59,7 +68,7 @@ public class BasisServiceImpl implements BasisService {
         String token = uploadDataInfo.getToken();
         int count = packageSerialDao.countBySerial(serial);
         if (count > 0){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号)字段不能为空." ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 已存在。" ).toString() );
         }
         if(PowerUtil.isNull( encryptData )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"encryptData字段不能为空.");
@@ -80,21 +89,16 @@ public class BasisServiceImpl implements BasisService {
         if( !JwtUtil.verify( token ) ){
             return new UploadDataResult( ParamEnum.resultCode.tokenExpired.getCode(),  ParamEnum.resultCode.tokenExpired.getName(),"");
         }
-
+        PackageSerialInfo packageSerialInfo = new PackageSerialInfo();
+        packageSerialInfo.setSerial(serial);
+        packageSerialInfo.setUploadTime(new Date() );
+        packageSerialInfo.setResult(ParamEnum.resultStatus.status0.getCode());
+        packageSerialInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
+        packageSerialInfo.setFastdfsStatus(ParamEnum.fastdfsStatus.status0.getCode());
         //ParamEnum.properties.dev.getCode().equals( active )
-        if(true){
+        if(false){
             try {
                 Map<String, Object> object = HttpUtil.post( dataUploadUrl, uploadDataInfo );
-
-                PackageSerialInfo packageSerialInfo = new PackageSerialInfo();
-                packageSerialInfo.setSerial(serial);
-                packageSerialInfo.setUploadTime(new Date() );
-                packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
-                packageSerialInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
-                packageSerialInfo.setFastdfsId("");
-                packageSerialInfo.setFastdfsStatus(ParamEnum.fastdfsStatus.status0.getCode());
-                packageSerialDao.save( packageSerialInfo );
-
                 if(PowerUtil.isNull( object )){
                     return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),PowerUtil.getString( object ));
                 }else{
@@ -104,9 +108,42 @@ public class BasisServiceImpl implements BasisService {
                 e.printStackTrace();
             }
         }else{
+            //FTP的上传方式
 
+            //为临时文件名称添加前缀和后缀
+            /*File temp = File.createTempFile("pattern",".txt");
+            System.out.println("临时文件名称为："+temp.getName());
+            //在退出时删除
+            temp.deleteOnExit();
+            //在临时文件中写入内容
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(temp));
+            bufferedWriter.write( JSON.toJSONString(uploadDataInfo));
+            bufferedWriter.close();
+
+            File tempZip = File.createTempFile("pattern",".zip");
+            //在退出时删除
+            tempZip.deleteOnExit();
+            System.out.println("临时文件名称为："+tempZip.getName());
+            FileEncryptUtil.encryptStreamZip( temp,tempZip,"123456" );*/
+            //文件上传
+            //System.out.println( fTPUtil.uploadFile( "/test", tempZip ) );
+            //fTPUtil.getDateList( "/test/" );
+            fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
+            //FastDFS的上传方式
+            /*try {
+                FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
+                String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
+                if (PowerUtil.isNotNull( fastDFSPath )) {
+                    packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
+                    packageSerialInfo.setFastdfsId(fastDFSPath);
+                }
+            } catch (Exception e) {
+                packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
+                e.printStackTrace();
+            }*/
         }
-        return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),"");
+        //packageSerialDao.save( packageSerialInfo );
+        return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
     }
 
     /**
@@ -124,10 +161,5 @@ public class BasisServiceImpl implements BasisService {
         return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
     }
 
-
-    public static void main(String[] args) {
-
-        System.out.println( JwtUtil.verify( "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.JTdCJTIyZXhwJTIyJTNBMTU5NzIzOTMlMkMlMjJhY2NvdW50JTIyJTNBJTIyYWRtaW4lMjIlN0Q=.diN8dbN7VITioIo7pyoQ3ZhpAZJ-uTMDgdNagoQuF3I" ) );
-    }
 
 }
