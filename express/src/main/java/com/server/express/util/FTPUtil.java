@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.alibaba.fastjson.JSON;
 import com.server.express.entity.UploadDataInfo;
+import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.net.ftp.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,7 @@ public class FTPUtil {
     private  String zipEncode;
 
 
-
+    private static String SERVER_CHARSET = "ISO-8859-1";
     /** 本地字符编码 */
     private static String LOCAL_CHARSET = "GBK";
 
@@ -78,7 +79,7 @@ public class FTPUtil {
                 ftp.makeDirectory(pathTemp);
                 ftp.changeWorkingDirectory(pathTemp);
             }
-            String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), FTP.DEFAULT_CONTROL_ENCODING );
+            String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), SERVER_CHARSET );
             fileInputStream = new FileInputStream( file );
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
             return isSuccess;
@@ -115,7 +116,7 @@ public class FTPUtil {
                 FTPFile [] ftpFiles = ftp.listFiles();
                 for (FTPFile file : ftpFiles) {
                     if (file.isFile()) {
-                        String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
+                        String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),SERVER_CHARSET);
                         File localFile = new File(localpath + "/" + file.getName());
                         FileOutputStream fileOutputStream = new FileOutputStream( localFile );
                         bufferRead = new BufferedOutputStream(fileOutputStream);
@@ -157,7 +158,7 @@ public class FTPUtil {
                     BufferedOutputStream bufferRead = null;
                     FileOutputStream fileOutputStream = null;
                     if (file.isFile()) {
-                        String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
+                        String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),SERVER_CHARSET);
                         File localFile = File.createTempFile("ftp",".zip");
                         localFile.deleteOnExit();
                         fileOutputStream = new FileOutputStream( localFile );
@@ -183,7 +184,37 @@ public class FTPUtil {
         }
 
     }
-     
+
+    /**
+     * @description  删除ftp文件夹下面的视频文件
+     * @param  path  文件路径
+     * @param  name  文件名
+     * @return  返回结果
+     * @date  20/08/18 18:11
+     * @author  wanghb
+     * @edit
+     */
+    public boolean deleteFile(String path,String name){
+        boolean isAppend = false;
+        try {
+            if(!login()){
+                return isAppend;
+            }
+            path = new String(path.getBytes(LOCAL_CHARSET),SERVER_CHARSET);
+            ftp.changeWorkingDirectory(path);
+            name = new String(name.getBytes(LOCAL_CHARSET),SERVER_CHARSET);
+            ftp.dele(name);
+            ftp.logout();
+            isAppend = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            closeClient();
+        }
+        return isAppend;
+    }
+
+
     /**
      * @description  断开与远程服务器的连接
      * @return  返回结果

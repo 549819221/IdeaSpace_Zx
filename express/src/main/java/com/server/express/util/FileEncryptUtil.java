@@ -42,8 +42,8 @@ public class FileEncryptUtil {
 
     /**
      * @Description 将指定路径下的文件压缩至指定zip文件，并以指定密码加密,若密码为空，则不进行加密保护
-     * @param tempFile 待压缩文件路径
-     * @param zipFile zip路径+文件名
+     * @param tempFile 待压缩文件  为临时文件存放
+     * @param zipFile 压缩文件  为临时文件存放
      * @param encode 加密密码
      * @return
      */

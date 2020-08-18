@@ -88,7 +88,6 @@ public class BasisServiceImpl implements BasisService {
         if(PowerUtil.isNull( token )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
         }
-
         if( !JwtUtil.verify( token ) ){
             return new UploadDataResult( ParamEnum.resultCode.tokenExpired.getCode(),  ParamEnum.resultCode.tokenExpired.getName(),"");
         }
@@ -111,24 +110,21 @@ public class BasisServiceImpl implements BasisService {
                 e.printStackTrace();
             }
         }else{
-            //FTP的上传方式
-            //为临时文件名称添加前缀和后缀
+            /*//FTP的上传
             File temp = File.createTempFile("ftp",".txt");
-            System.out.println("临时文件名称为："+temp.getName());
-            //在退出时删除
             temp.deleteOnExit();
             //在临时文件中写入内容
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(temp));
             bufferedWriter.write( JSON.toJSONString(uploadDataInfo));
             bufferedWriter.close();
             File tempZip = File.createTempFile("ftp",".zip");
-            //在退出时删除
             tempZip.deleteOnExit();
             FileEncryptUtil.encryptStreamZip(temp,tempZip,zipEncode);
             //文件上传
-            fTPUtil.uploadFile( "/test", tempZip );
-            System.out.println(temp.delete());
-            System.out.println(tempZip.delete());
+            fTPUtil.uploadFile( "/data", tempZip );
+            temp.delete();
+            tempZip.delete();*/
+            fTPUtil.deleteFile( "/data", "ftp7500632415927387638.zip" );
             //文件解析
             //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
             //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
