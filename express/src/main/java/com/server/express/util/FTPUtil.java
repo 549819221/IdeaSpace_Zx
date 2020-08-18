@@ -2,8 +2,13 @@ package com.server.express.util;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import com.alibaba.fastjson.JSON;
+import com.server.express.entity.PackageSerialInfo;
+import com.server.express.entity.UploadDataInfo;
 import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.net.ftp.*;
@@ -24,6 +29,9 @@ public class FTPUtil {
     private  String ftpUsername;
     @Value("${ftp.password}")
     private  String ftpPassword;
+    @Value("${zip.encode}")
+    private  String zipEncode;
+
 
 
     /** 本地字符编码 */
@@ -36,23 +44,18 @@ public class FTPUtil {
      * @author  wanghb
      * @edit
      */
-    public  boolean login() {
-        try {
-            ftp = new FTPClient();
-            ftp.connect(ftpIp, ftpPort);
-            boolean isLogin = ftp.login( ftpUsername, ftpPassword );
-            if(!isLogin){
-                return false;
-            }
-            // 开启服务器对UTF-8的支持，如果服务器支持就用UTF-8编码，否则就使用本地编码（GBK）.
-            if (FTPReply.isPositiveCompletion(ftp.sendCommand("OPTS UTF8", "ON"))) {
-                LOCAL_CHARSET = "UTF-8";
-            }
-            ftp.setControlEncoding(LOCAL_CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public  boolean login() throws IOException {
+        ftp = new FTPClient();
+        ftp.connect(ftpIp, ftpPort);
+        boolean isLogin = ftp.login( ftpUsername, ftpPassword );
+        if(!isLogin){
             return false;
         }
+        // 开启服务器对UTF-8的支持，如果服务器支持就用UTF-8编码，否则就使用本地编码（GBK）.
+        if (FTPReply.isPositiveCompletion(ftp.sendCommand("OPTS UTF8", "ON"))) {
+            LOCAL_CHARSET = "UTF-8";
+        }
+        ftp.setControlEncoding(LOCAL_CHARSET);
         return true;
     }
 
@@ -66,7 +69,7 @@ public class FTPUtil {
      * @author  wanghb
      * @edit
      */
-    public  boolean uploadFile(String path,File file) throws IOException{
+    public boolean uploadFile(String path,File file) throws IOException{
         try {
             if(!login()){
                 return false;
@@ -76,12 +79,14 @@ public class FTPUtil {
             String[] paths = path.split("/");
             for (int i = 0; i < paths.length; i++){
                 String pathTemp = paths[i];
-                System.out.println(ftp.printWorkingDirectory());
                 ftp.makeDirectory(pathTemp);
                 ftp.changeWorkingDirectory(pathTemp);
             }
-            String fileName = new String(file.getName().getBytes("UTF-8"), FTP.DEFAULT_CONTROL_ENCODING );
-            return ftp.storeFile(fileName, new FileInputStream( file ));
+            String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), FTP.DEFAULT_CONTROL_ENCODING );
+            FileInputStream fileInputStream = new FileInputStream( file );
+            Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
+            fileInputStream.close();
+            return isSuccess;
         } finally {
             closeClient();
         }
@@ -114,38 +119,39 @@ public class FTPUtil {
                     if (file.isFile()) {
                         String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
                         File localFile = new File(localpath + "/" + file.getName());
-                        bufferRead = new BufferedOutputStream(new FileOutputStream(localFile));
+                        FileOutputStream fileOutputStream = new FileOutputStream( localFile );
+                        bufferRead = new BufferedOutputStream(fileOutputStream);
                         ftp.retrieveFile(fileName, bufferRead);
                         bufferRead.flush();
+                        fileOutputStream.close();
                     }
                 }
                 ftp.logout();
                 flag = true;
-                
             } finally{
                 closeClient();
-             } 
+            }
         }
         return flag;
     }
 
     /**
-     * @description  向FTP服务器下载文件
+     * @description  获取数据
      * @param  fpath  文件路径
      * @return  返回结果
      * @date  20/08/17 17:01
      * @author  wanghb
      * @edit
      */
-    public boolean getDateList(String fpath) throws IOException{
+    public List<UploadDataInfo> getDateList(String fpath) throws IOException, ZipException {
+        List<UploadDataInfo> uploadDataInfos = new ArrayList<>();
+        BufferedOutputStream bufferRead = null;
+        FileOutputStream fileOutputStream = null;
         if(!login()){
-            return false;
+            return uploadDataInfos;
         }
-        boolean flag = false;
-
-        if(fpath.startsWith("/") && fpath.endsWith("/")){
-            try {
-                BufferedOutputStream bufferRead = null;
+        try {
+            if(fpath.startsWith("/") && fpath.endsWith("/")){
                 ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
                 //切换到当前目录
                 ftp.changeWorkingDirectory(fpath);
@@ -156,23 +162,30 @@ public class FTPUtil {
                         String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
                         System.out.println(fileName);
                         File localFile = File.createTempFile("pattern",".zip");
-                        //File localFile = new File("C:\\Users\\Administrator\\Desktop\\" + file.getName());
-                        bufferRead = new BufferedOutputStream(new FileOutputStream(localFile));
+                        localFile.deleteOnExit();
+                        fileOutputStream = new FileOutputStream( localFile );
+                        bufferRead = new BufferedOutputStream( fileOutputStream );
                         ftp.retrieveFile(fileName, bufferRead);
                         bufferRead.flush();
-                        System.out.println( FileEncryptUtil.getPackageSerialInfo( localFile ) );
+                        String packageSerialJson = FileEncryptUtil.getPackageSerialInfo( localFile,zipEncode );
+                        uploadDataInfos.add( JSON.parseObject(packageSerialJson, UploadDataInfo.class) );
+                        //删除临时文件
+                        localFile.delete();
                     }
                 }
                 ftp.logout();
-                flag = true;
-
-            } catch (ZipException e) {
-                e.printStackTrace();
-            } finally{
-                closeClient();
             }
+            return uploadDataInfos;
+        }finally{
+            if (bufferRead != null) {
+                bufferRead.close();
+            }
+            if (fileOutputStream != null) {
+                fileOutputStream.close();
+            }
+            closeClient();
         }
-        return flag;
+
     }
      
     /**

@@ -3,6 +3,7 @@ package com.server.express.util;
 import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.io.ZipInputStream;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
@@ -88,36 +89,37 @@ public class FileEncryptUtil {
      * @author  wanghb
      * @edit
      */
-    public static String getPackageSerialInfo(File tempFile) throws ZipException {
-        long startTime = System.currentTimeMillis();
-        ZipFile zipFile2 = new ZipFile(tempFile);
-        //设置编码格式
-        zipFile2.setFileNameCharset("GBK");
-        if (!zipFile2.isValidZipFile()) {
-            throw new ZipException("文件不合法或不存在");
-        }
-        //检查是否需要密码
-        if (zipFile2.isEncrypted()) {
-            zipFile2.setPassword("123456");
-        }
-        List<FileHeader> fileHeaderList = zipFile2.getFileHeaders();
-        for (int i = 0; i < fileHeaderList.size(); i++) {
-            FileHeader fileHeader = fileHeaderList.get(i);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(zipFile2.getInputStream(fileHeader)));
-            String line;
-            try {
-                while ( ( line = reader.readLine() ) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+    public static String getPackageSerialInfo(File tempFile,String encode) throws ZipException, IOException {
+        ZipInputStream inputStream = null;
+        InputStreamReader inputStreamReader = null;
+        try {
+            ZipFile zipFile2 = new ZipFile(tempFile);
+            //设置编码格式
+            zipFile2.setFileNameCharset("UTF-8");
+            if (!zipFile2.isValidZipFile()) {
+                throw new ZipException("文件不合法或不存在");
             }
-        }
-        System.out.println("解压成功！");
-        long endTime = System.currentTimeMillis();
-        System.out.println("耗时：" + (endTime - startTime) + "ms");
-        return "";
+            //检查是否需要密码
+            if (zipFile2.isEncrypted()) {
+                zipFile2.setPassword(encode);
+            }
+            List<FileHeader> fileHeaderList = zipFile2.getFileHeaders();
+            FileHeader fileHeader = fileHeaderList.get(0);
+            inputStream = zipFile2.getInputStream( fileHeader );
+            inputStreamReader = new InputStreamReader( inputStream );
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            StringBuffer json = new StringBuffer();
+            String line;
+            while ( ( line = reader.readLine() ) != null) {
+                json.append( line );
+            }
+            return json.toString();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
 
+        }
     }
 
 
