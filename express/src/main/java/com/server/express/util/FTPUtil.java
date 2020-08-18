@@ -144,21 +144,22 @@ public class FTPUtil {
 
         if(fpath.startsWith("/") && fpath.endsWith("/")){
             try {
+                BufferedOutputStream bufferRead = null;
                 ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
                 //切换到当前目录
                 ftp.changeWorkingDirectory(fpath);
                 ftp.enterLocalActiveMode();
                 FTPFile [] ftpFiles = ftp.listFiles();
                 for (FTPFile file : ftpFiles) {
-                    BufferedOutputStream bufferRead = null;
                     if (file.isFile()) {
                         String fileName = new String(file.getName().getBytes(LOCAL_CHARSET),FTP.DEFAULT_CONTROL_ENCODING);
                         System.out.println(fileName);
-                        File tempFile = File.createTempFile("pattern",".zip");
-                        bufferRead = new BufferedOutputStream(new FileOutputStream(tempFile));
+                        File localFile = File.createTempFile("pattern",".zip");
+                        //File localFile = new File("C:\\Users\\Administrator\\Desktop\\" + file.getName());
+                        bufferRead = new BufferedOutputStream(new FileOutputStream(localFile));
                         ftp.retrieveFile(fileName, bufferRead);
                         bufferRead.flush();
-                        System.out.println( FileEncryptUtil.getPackageSerialInfo( tempFile ) );
+                        System.out.println( FileEncryptUtil.getPackageSerialInfo( localFile ) );
                     }
                 }
                 ftp.logout();

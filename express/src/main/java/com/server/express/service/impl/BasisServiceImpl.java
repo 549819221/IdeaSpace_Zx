@@ -127,8 +127,8 @@ public class BasisServiceImpl implements BasisService {
             FileEncryptUtil.encryptStreamZip( temp,tempZip,"123456" );*/
             //文件上传
             //System.out.println( fTPUtil.uploadFile( "/test", tempZip ) );
-            //fTPUtil.getDateList( "/test/" );
-            fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
+            fTPUtil.getDateList( "/test/" );
+            //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
             //FastDFS的上传方式
             /*try {
                 FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");

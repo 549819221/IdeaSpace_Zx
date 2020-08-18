@@ -13,6 +13,7 @@ import org.apache.commons.net.ftp.FTP;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
 
 
 public class FileEncryptUtil {
@@ -91,30 +92,34 @@ public class FileEncryptUtil {
     }
 
     public static String getPackageSerialInfo(File tempFile) throws ZipException {
-        ZipFile zipFile = new ZipFile(tempFile);
-        if (zipFile.isEncrypted()) {
-            zipFile.setPassword("123456");
+        long startTime = System.currentTimeMillis();
+        ZipFile zipFile2 = new ZipFile(tempFile);
+        //设置编码格式
+        zipFile2.setFileNameCharset("GBK");
+        if (!zipFile2.isValidZipFile()) {
+            throw new ZipException("文件不合法或不存在");
         }
-        File file = zipFile.getFile();
-        String encoding = "UTF-8";
-        Long filelength = file.length();
-        byte[] filecontent = new byte[filelength.intValue()];
-        try {
-            FileInputStream in = new FileInputStream(file);
-            in.read(filecontent);
-            in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        //检查是否需要密码
+        if (zipFile2.isEncrypted()) {
+            zipFile2.setPassword("123456");
         }
-        try {
-            return new String(filecontent, encoding);
-        } catch (UnsupportedEncodingException e) {
-            System.err.println("The OS does not support " + encoding);
-            e.printStackTrace();
-            return null;
+        List<FileHeader> fileHeaderList = zipFile2.getFileHeaders();
+        for (int i = 0; i < fileHeaderList.size(); i++) {
+            FileHeader fileHeader = fileHeaderList.get(i);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(zipFile2.getInputStream(fileHeader)));
+            String line;
+            try {
+                while ( ( line = reader.readLine() ) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        System.out.println("解压成功！");
+        long endTime = System.currentTimeMillis();
+        System.out.println("耗时：" + (endTime - startTime) + "ms");
+        return "";
 
     }
 
