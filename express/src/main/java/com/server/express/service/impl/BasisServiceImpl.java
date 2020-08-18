@@ -39,6 +39,9 @@ public class BasisServiceImpl implements BasisService {
     @Value("${dataUploadUrl}")
     private String dataUploadUrl;
 
+    @Value("${zip.encode}")
+    private  String zipEncode;
+
 
     @Resource
     private FTPUtil fTPUtil;
@@ -109,14 +112,14 @@ public class BasisServiceImpl implements BasisService {
             }
         }else{
             //FTP的上传方式
-
             //为临时文件名称添加前缀和后缀
-            /*File temp = File.createTempFile("pattern",".txt");
+            File temp = File.createTempFile("pattern",".txt");
             System.out.println("临时文件名称为："+temp.getName());
             //在退出时删除
             temp.deleteOnExit();
             //在临时文件中写入内容
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(temp));
+            System.out.println(JSON.toJSONString(uploadDataInfo));
             bufferedWriter.write( JSON.toJSONString(uploadDataInfo));
             bufferedWriter.close();
 
@@ -124,10 +127,11 @@ public class BasisServiceImpl implements BasisService {
             //在退出时删除
             tempZip.deleteOnExit();
             System.out.println("临时文件名称为："+tempZip.getName());
-            FileEncryptUtil.encryptStreamZip( temp,tempZip,"123456" );*/
+            FileEncryptUtil.encryptStreamZip(temp,tempZip,zipEncode);
             //文件上传
-            //System.out.println( fTPUtil.uploadFile( "/test", tempZip ) );
-            fTPUtil.getDateList( "/test/" );
+            System.out.println( fTPUtil.uploadFile( "/test", tempZip ) );
+            //文件解析
+            //fTPUtil.getDateList( "/test/" );
             //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
             //FastDFS的上传方式
             /*try {

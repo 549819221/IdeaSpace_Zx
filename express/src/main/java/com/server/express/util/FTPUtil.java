@@ -25,6 +25,7 @@ public class FTPUtil {
     @Value("${ftp.password}")
     private  String ftpPassword;
 
+
     /** 本地字符编码 */
     private static String LOCAL_CHARSET = "GBK";
 
