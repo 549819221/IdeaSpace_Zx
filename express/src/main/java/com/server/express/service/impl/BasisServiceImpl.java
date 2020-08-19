@@ -77,7 +77,6 @@ public class BasisServiceImpl implements BasisService {
         if(PowerUtil.isNull( serial )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
         }
-
         int count = packageSerialDao.countBySerial(serial);
         if (count > 0){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 已存在。" ).toString() );
