@@ -130,12 +130,12 @@ public interface ParamEnum {
     }
 
     /**
-     * 0.FastDFS中文件未删除；1.FastDFS中文件已删除
+     * 0.FTP中文件未删除；1.FTP中文件已删除
      * @author wanghb
      */
-    enum fastdfsStatus {
-        status0( "0","FastDFS中文件未删除"),
-        status1( "1","FastDFS中文件已删除"),
+    enum ftpStatus {
+        status0( "0","FTP中文件未删除"),
+        status1( "1","FTP中文件已删除"),
         ;
         private String code;
         private String name;
@@ -145,12 +145,12 @@ public interface ParamEnum {
         public String getName() {
             return name;
         }
-        fastdfsStatus(String code, String name) {
+        ftpStatus(String code, String name) {
             this.code = code;
             this.name = name;
         }
         public static String getNameByCode(String code) {
-            for (fastdfsStatus item : fastdfsStatus.values()) {
+            for (ftpStatus item : ftpStatus.values()) {
                 if (item.getCode().equals(code)) {
                     return item.getName();
                 }

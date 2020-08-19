@@ -1,5 +1,8 @@
 package com.server.express.util;
 
+import com.alibaba.fastjson.JSON;
+import com.server.express.entity.UploadDataInfo;
+import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
@@ -41,13 +44,20 @@ public class FileEncryptUtil {
     }
 
     /**
-     * @Description 将指定路径下的文件压缩至指定zip文件，并以指定密码加密,若密码为空，则不进行加密保护
-     * @param tempFile 待压缩文件  为临时文件存放
-     * @param zipFile 压缩文件  为临时文件存放
-     * @param encode 加密密码
-     * @return
+     * @description
+     * @param  jsonString  JSON串  例: JSON.toJSONString(uploadDataInfo)
+     * @param  zipPrefix  zip前缀
+     * @param  encode  秘钥
+     * @return  返回结果
+     * @date  20/08/19 14:43
+     * @author  wanghb
+     * @edit
      */
-    public static void encryptStreamZip(File tempFile, File zipFile, String encode) throws IOException, ZipException {
+    public static File encryptStreamZip(String jsonString,String zipPrefix, String encode) throws IOException, ZipException {
+        File tempFile = getTempFile(jsonString);
+        File zipFile = File.createTempFile(zipPrefix,".zip");
+        zipFile.deleteOnExit();
+
         ArrayList filesToAdd = new ArrayList();
         filesToAdd.add(tempFile);
         ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFile));
@@ -77,8 +87,27 @@ public class FileEncryptUtil {
         }
         outputStream.finish();
         outputStream.close();
+        tempFile.delete();
+        return zipFile;
     }
 
+    /**
+     * @description  获取临时文件
+     * @param  jsonString  JSON串
+     * @return  返回结果
+     * @date  20/08/19 14:13
+     * @author  wanghb
+     * @edit
+     */
+    private static File getTempFile(String jsonString) throws IOException {
+        File temp = File.createTempFile( "temp",".txt");
+        temp.deleteOnExit();
+        //在临时文件中写入内容
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(temp));
+        bufferedWriter.write( jsonString );
+        bufferedWriter.close();
+        return temp;
+    }
 
     /**
      * @description  解析压缩文件

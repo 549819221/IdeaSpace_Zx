@@ -1,10 +1,7 @@
 package com.server.express.service;
 
 
-import com.server.express.entity.TokenResult;
-import com.server.express.entity.UploadDataInfo;
-import com.server.express.entity.UploadDataResult;
-import com.server.express.entity.User;
+import com.server.express.entity.*;
 import net.lingala.zip4j.exception.ZipException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,4 +16,5 @@ public interface BasisService  {
     Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException;
     TokenResult getToken(User user, HttpServletRequest request);
 
+    UploadDataResult updateStatus(PackageSerialInfo packageSerialParam);
 }

@@ -80,6 +80,7 @@ public class FTPUtil {
                 ftp.changeWorkingDirectory(pathTemp);
             }
             String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), SERVER_CHARSET );
+            fileName = fileName.substring(0, fileName.indexOf("_")) + fileName.substring(fileName.indexOf("."));
             fileInputStream = new FileInputStream( file );
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
             return isSuccess;
@@ -239,6 +240,9 @@ public class FTPUtil {
         //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
         //文件下载
         //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
+        String month = "sdfsdfsdf_123123123123.zip";
+        String beginMonth = month.substring(0, month.indexOf("_")) + month.substring(month.indexOf("."));//截取从字符‘-’位置开始的字符串
+        System.out.println(beginMonth);
     }
 
 }
