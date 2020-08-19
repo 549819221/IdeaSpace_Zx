@@ -232,4 +232,13 @@ public class FTPUtil {
         }
     }
 
+    public static void main(String[] args) {
+        //文件删除
+        //fTPUtil.deleteFile( "/data", "ftp7500632415927387638.zip" );
+        //文件解析
+        //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
+        //文件下载
+        //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
+    }
+
 }

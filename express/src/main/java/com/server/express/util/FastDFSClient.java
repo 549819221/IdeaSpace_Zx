@@ -198,9 +198,9 @@ public class FastDFSClient {
             //获取上传数据的二进制字节码，以扩展名为extName的格式存在文件服务器，返回该文件在文件服务器的路径
             //String fastDFSPath = fastDFSClient.uploadFile(multipartFile.getBytes(), extName);
             //group1/M00/00/02/b-W4ZF82P7eACN6eAAHyc7Xu0aU9374580
-            byte[] download = fastDFSClient.download( "group1/M00/00/02/b-W4ZF82R3yABr1yAAAA0KyrcOA3279229" );
-            UploadDataInfo bean = JSON.parseObject(new String(download, "UTF-8"), UploadDataInfo.class);
-            System.out.println(1);
+            //byte[] download = fastDFSClient.download( "group1/M00/00/02/b-W4ZF82R3yABr1yAAAA0KyrcOA3279229" );
+            //UploadDataInfo bean = JSON.parseObject(new String(download, "UTF-8"), UploadDataInfo.class);
+            //System.out.println(1);
         } catch (Exception e) {
             e.printStackTrace();
         }

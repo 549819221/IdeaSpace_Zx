@@ -63,7 +63,6 @@ public class BasisServiceImpl implements BasisService {
     @Transactional
     public Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException {
 
-        //fTPUtil.uploadFile("/test",new File( "C:\\Users\\Administrator\\Desktop\\图片.png" ));
         String encryptData = uploadDataInfo.getEncryptData();
         String accountNo = uploadDataInfo.getAccountNo();
         String serial = uploadDataInfo.getSerial();
@@ -96,7 +95,7 @@ public class BasisServiceImpl implements BasisService {
         packageSerialInfo.setUploadTime(new Date() );
         packageSerialInfo.setResult(ParamEnum.resultStatus.status0.getCode());
         packageSerialInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
-        packageSerialInfo.setFastdfsStatus(ParamEnum.fastdfsStatus.status0.getCode());
+        packageSerialInfo.setFtpPath(ParamEnum.fastdfsStatus.status0.getCode());
         //ParamEnum.properties.dev.getCode().equals( active )
         if(false){
             try {
@@ -110,7 +109,7 @@ public class BasisServiceImpl implements BasisService {
                 e.printStackTrace();
             }
         }else{
-            /*//FTP的上传
+            //FTP的上传
             File temp = File.createTempFile("ftp",".txt");
             temp.deleteOnExit();
             //在临时文件中写入内容
@@ -123,11 +122,7 @@ public class BasisServiceImpl implements BasisService {
             //文件上传
             fTPUtil.uploadFile( "/data", tempZip );
             temp.delete();
-            tempZip.delete();*/
-            fTPUtil.deleteFile( "/data", "ftp7500632415927387638.zip" );
-            //文件解析
-            //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
-            //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
+            tempZip.delete();
             //FastDFS的上传方式
             /*try {
                 FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");

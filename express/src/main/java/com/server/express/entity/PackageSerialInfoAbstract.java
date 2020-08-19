@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 /**
 * 包流水信息( PackageSerialInfoAbstract )实体抽象类
 * @author wanghb
-* @since 2020-8-14 13:54:48
+* @since 2020-8-19 11:38:40
 */
 @MappedSuperclass
 @ApiModel(description= "包流水信息( PackageSerialInfoAbstract )实体")
@@ -48,16 +48,16 @@ public class PackageSerialInfoAbstract implements Serializable {
     private String event;
 
     @Basic
-    @Column(name = "fastdfs_id")
+    @Column(name = "ftp_path")
     @JsonView(JsonViewMark.SimpleView.class)
-    @ApiModelProperty(value="上传到FastDFS成功后FastDFS返回的ID，之后通过此ID删除FastDFS中保存的文件",name=" fastdfsId",required=false)
-    private String fastdfsId;
+    @ApiModelProperty(value="上传到FTP成功后FTP返回的路径，之后通过此路径删除FTP中保存的文件",name=" ftpPath",required=false)
+    private String ftpPath;
 
     @Basic
-    @Column(name = "fastdfs_status")
+    @Column(name = "ftp_status")
     @JsonView(JsonViewMark.SimpleView.class)
-    @ApiModelProperty(value="0.FastDFS中文件未删除；1.FastDFS中文件已删除",name=" fastdfsStatus",required=false)
-    private String fastdfsStatus;
+    @ApiModelProperty(value="0.FTP中文件未删除；1.FTP中文件已删除",name=" ftpStatus",required=false)
+    private String ftpStatus;
 
     public String getSerial() {
     return serial;
@@ -91,20 +91,20 @@ public class PackageSerialInfoAbstract implements Serializable {
     this.event = event;
     }
 
-    public String getFastdfsId() {
-    return fastdfsId;
+    public String getFtpPath() {
+    return ftpPath;
     }
 
-    public void setFastdfsId(String fastdfsId) {
-    this.fastdfsId = fastdfsId;
+    public void setFtpPath(String ftpPath) {
+    this.ftpPath = ftpPath;
     }
 
-    public String getFastdfsStatus() {
-    return fastdfsStatus;
+    public String getFtpStatus() {
+    return ftpStatus;
     }
 
-    public void setFastdfsStatus(String fastdfsStatus) {
-    this.fastdfsStatus = fastdfsStatus;
+    public void setFtpStatus(String ftpStatus) {
+    this.ftpStatus = ftpStatus;
     }
 
 
