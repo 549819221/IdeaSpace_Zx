@@ -32,7 +32,6 @@ public class BasisServiceImpl implements BasisService {
 
     private static Logger logger = Logger.getLogger( BasisServiceImpl.class );
 
-    //private static String dataUploadUrl= "http://app4.zyxlgx.top:9090/delivery/dataUpload";
     @Value("${spring.profiles.active}")
     private String active;
 
@@ -105,7 +104,6 @@ public class BasisServiceImpl implements BasisService {
             //文件上传
             isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
             packageSerialInfo.setFtpPath( ftpUploadPath +"/"+ serial + ".zip" );
-
             tempZip.delete();
         }else{
             Map<String, Object> object = HttpUtil.post( dataUploadUrl, uploadDataInfo );
