@@ -17,4 +17,6 @@ public interface BasisService  {
     TokenResult getToken(User user, HttpServletRequest request);
 
     UploadDataResult updateStatus(PackageSerialInfo packageSerialParam);
+
+    Object expressStaffUpload(ExpressStaff expressStaff);
 }

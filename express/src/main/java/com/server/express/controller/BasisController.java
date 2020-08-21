@@ -54,6 +54,27 @@ public class BasisController  {
         return obj;
     }
 
+
+    /**
+     * @description  上传数据
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    @PostMapping("/expressStaffUpload")
+    @ResponseBody
+    public Object expressStaffUpload(@RequestBody ExpressStaff expressStaff) {
+        Object obj = null;
+        try {
+            obj = basisService.expressStaffUpload(expressStaff);
+        } catch (Exception e) {
+            logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );
+        }
+        return obj;
+    }
+
     /**
      * @description  令牌获取
      * @return  实体对象

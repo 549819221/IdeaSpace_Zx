@@ -5,6 +5,7 @@ import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
 import com.server.express.util.*;
+import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,6 +125,8 @@ public class BasisServiceImpl implements BasisService {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 e.printStackTrace();
             }*/
+
+
         }
         if(isSuccess){
             packageSerialDao.save( packageSerialInfo );
@@ -131,8 +134,21 @@ public class BasisServiceImpl implements BasisService {
         }else {
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
         }
+    }
 
 
+    /**
+     * @description  上传快递员信息
+     * @param  expressStaff  快递员信息
+     * @return  返回结果
+     * @date  20/08/20 14:21
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public Object expressStaffUpload(ExpressStaff expressStaff) {
+
+        return null;
     }
 
     /**

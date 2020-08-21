@@ -1,8 +1,5 @@
 package com.server.express.util;
 
-import com.alibaba.fastjson.JSON;
-import com.server.express.entity.UploadDataInfo;
-import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
