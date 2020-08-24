@@ -5,7 +5,6 @@ import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
 import com.server.express.util.*;
-import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +37,8 @@ public class BasisServiceImpl implements BasisService {
 
     @Value("${dataUploadUrl}")
     private String dataUploadUrl;
+    @Value("${expressStaffDataUploadUrl}")
+    private String expressStaffDataUploadUrl;
 
     @Value("${zip.encode}")
     private  String zipEncode;
@@ -57,10 +58,11 @@ public class BasisServiceImpl implements BasisService {
      * @author wanghb
      * @edit
      * @param uploadDataInfo
+     * @param uploadUrl
      */
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException {
+    public Object dataUpload(UploadDataInfo uploadDataInfo, String uploadUrl) throws IOException, ZipException {
 
         String serial = uploadDataInfo.getSerial();
         String encryptData = uploadDataInfo.getEncryptData();
@@ -107,11 +109,21 @@ public class BasisServiceImpl implements BasisService {
             packageSerialInfo.setFtpPath( ftpUploadPath +"/"+ serial + ".zip" );
             tempZip.delete();
         }else{
-            Map<String, Object> object = HttpUtil.post( dataUploadUrl, uploadDataInfo );
+            String url = "";
+            if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
+                url = dataUploadUrl;
+            }else if(ParamEnum.uploadUrl.expressStaffDataUploadUrl.getCode().equals( uploadUrl )){
+                url = expressStaffDataUploadUrl;
+            }
+            Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),PowerUtil.getString( object ));
             }else{
-                return object;
+                String code = PowerUtil.getString( object.get("code") );
+                isSuccess = ParamEnum.resultCode.success.getCode().equals( code );
+                if(!isSuccess){
+                  return object;
+                }
             }
             //FastDFS的上传方式
             /*try {
@@ -136,20 +148,6 @@ public class BasisServiceImpl implements BasisService {
         }
     }
 
-
-    /**
-     * @description  上传快递员信息
-     * @param  expressStaff  快递员信息
-     * @return  返回结果
-     * @date  20/08/20 14:21
-     * @author  wanghb
-     * @edit
-     */
-    @Override
-    public Object expressStaffUpload(ExpressStaff expressStaff) {
-
-        return null;
-    }
 
     /**
      * @description  获取token

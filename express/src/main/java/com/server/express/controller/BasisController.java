@@ -46,7 +46,7 @@ public class BasisController  {
     public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo) {
         Object obj = null;
         try {
-            obj = basisService.dataUpload(uploadDataInfo);
+            obj = basisService.dataUpload(uploadDataInfo,ParamEnum.uploadUrl.dataUpload.getCode());
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );
@@ -64,10 +64,10 @@ public class BasisController  {
      */
     @PostMapping("/expressStaffUpload")
     @ResponseBody
-    public Object expressStaffUpload(@RequestBody ExpressStaff expressStaff) {
+    public Object expressStaffUpload(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
-            obj = basisService.expressStaffUpload(expressStaff);
+            obj = basisService.dataUpload(expressStaff,ParamEnum.uploadUrl.expressStaffDataUploadUrl.getCode());
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );

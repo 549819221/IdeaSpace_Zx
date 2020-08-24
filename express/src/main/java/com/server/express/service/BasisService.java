@@ -13,10 +13,8 @@ import java.io.IOException;
  * @since 2020-07-10 14:43:45
  */
 public interface BasisService  {
-    Object dataUpload(UploadDataInfo uploadDataInfo) throws IOException, ZipException;
+    Object dataUpload(UploadDataInfo uploadDataInfo, String code) throws IOException, ZipException;
     TokenResult getToken(User user, HttpServletRequest request);
 
     UploadDataResult updateStatus(PackageSerialInfo packageSerialParam);
-
-    Object expressStaffUpload(ExpressStaff expressStaff);
 }

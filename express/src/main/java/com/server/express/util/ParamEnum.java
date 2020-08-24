@@ -39,6 +39,35 @@ public interface ParamEnum {
      * 配置环境
      * @author wanghb
      */
+    enum uploadUrl {
+        dataUpload( "dataUpload","上传快递接口"),
+        expressStaffDataUploadUrl( "expressStaffDataUploadUrl","上传快递员接口"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        uploadUrl(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (uploadUrl item : uploadUrl.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+    /**
+     * 配置环境
+     * @author wanghb
+     */
     enum resultCode {
         success( "0","成功"),
         error( "-1","失败"),

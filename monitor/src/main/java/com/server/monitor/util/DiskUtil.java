@@ -66,7 +66,7 @@ public class DiskUtil {
                     if( ParamEnum.systemType.Windows.getCode().equals( systemType ) ){
                         String cmd = new StringBuilder("wmic LogicalDisk where \"Caption='").append( partition ).append( "'\" get FreeSpace,Size /value" ).toString();
                         return getDiskByWindows( ssh ,cmd);
-                    }else if( ParamEnum.systemType.Ubuntu.getCode().equals( systemType ) ){
+                    }else{
                         String cmd = "df -hl";
                         return getDiskByLinux( ssh ,cmd,partition);
                     }
@@ -149,7 +149,6 @@ public class DiskUtil {
      * @edit
      */
     public static Object getDiskByLinux(Session ssh,String cmd,String partition){
-        Map<String, Object> map = new HashMap();
         BigDecimal totalSpace;
         BigDecimal freeSpace = BigDecimal.ZERO;
         BigDecimal usedSpace = BigDecimal.ZERO;
