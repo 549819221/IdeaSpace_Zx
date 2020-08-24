@@ -162,7 +162,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                     mas.append( "ping异常,异常ip:" ).append( ip ).append( "; " );
                 }
             } catch (Exception e) {
-                mas.append( "监控异常" ).append( "; " );
+                mas.append( "监控异常。" );
                 result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
                 logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
                 state = ParamEnum.yesOrNo.no.getCode().toString();
@@ -197,24 +197,35 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
         try {
             DiskInfo diskInfo = (DiskInfo) DiskUtil.executeCmd( diskMonitor );
             BigDecimal operateValue = PowerUtil.getBigDecimal( diskMonitor.getOperateValue() );
-            //剩余空间百分比
-            if (ParamEnum.operate.percentage.getCode().equals( diskMonitor.getOperate() )) {
-                if (operateValue.compareTo( diskInfo.getPercentage() ) > 0) {
-                    state = ParamEnum.yesOrNo.no.getCode().toString();
-                    mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( diskInfo.getPercentage() ).append( "%" );
-                }
-                //剩余空间大小
-            } else {
-                if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
-                    state = ParamEnum.yesOrNo.no.getCode().toString();
-                    mas.append( "磁盘容量超过阈值 设定的阈值剩余值为:" ).append( operateValue ).append( ",目前剩余:" ).append( diskInfo.getFreeSpace() );
+            BigDecimal totalSpace = diskInfo.getTotalSpace();
+            String partition = diskMonitor.getPartition();
+            String systemType = diskMonitor.getServerDetail().getSystem();
+            if ((BigDecimal.ZERO.compareTo( totalSpace ) == 0)) {
+                mas.append( "此" ).append( systemType ).append( "服务器没有查到 " ).append( partition ).append( " 这个磁盘目录,请核对。" );
+            }else{
+                BigDecimal usedSpace = diskInfo.getUsedSpace();
+                //剩余空间百分比
+                if (ParamEnum.operate.percentage.getCode().equals( diskMonitor.getOperate() )) {
+                    if (operateValue.compareTo( diskInfo.getPercentage() ) > 0) {
+                        BigDecimal percentage = diskInfo.getPercentage();
+                        state = ParamEnum.yesOrNo.no.getCode().toString();
+                        mas.append( "磁盘容量低于阈值,设定的阈值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( percentage ).append( "%,空间总量:" ).append( totalSpace ).append( "G,已使用:" ).append( usedSpace ).append( "G" );
+                    }
+                    //剩余空间大小
+                } else {
+                    if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
+                        state = ParamEnum.yesOrNo.no.getCode().toString();
+                        BigDecimal freeSpace = diskInfo.getFreeSpace();
+                        mas.append( "磁盘容量低于阈值,设定的阈值为:" ).append( operateValue ).append( "G,目前剩余:" ).append( freeSpace ).append( "G,空间总量:" ).append( totalSpace ).append( "G,已使用:" ).append( usedSpace ).append( "G" );
+                    }
                 }
             }
             state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
             monitorLog.setStatus( state );
             monitorLog.setMsg( mas.toString() );
         } catch (Exception e) {
-            mas.append( "监控异常" ).append( "; " );
+            e.printStackTrace();
+            mas.append( "监控异常。");
             result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
             logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
             state = ParamEnum.yesOrNo.no.getCode().toString();
@@ -306,7 +317,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 state = ParamEnum.yesOrNo.no.getCode().toString();
             }
         } catch (Exception e) {
-            mas.append( "监控异常" ).append( "; " );
+            mas.append( "监控异常。"  );
             result.append( "监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) );
             logger.error( new StringBuilder("监控异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e )));
             state = ParamEnum.yesOrNo.no.getCode().toString();

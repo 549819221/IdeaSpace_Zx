@@ -40,6 +40,10 @@ public class DiskInfo {
     }
 
     public BigDecimal getPercentage() {
-        return  freeSpace.divide(usedSpace,2,BigDecimal.ROUND_HALF_DOWN).multiply( DiskUtil.hundred );
+        if(BigDecimal.ZERO.compareTo(totalSpace) == 0){
+            return BigDecimal.ZERO;
+        }else {
+            return  freeSpace.divide(totalSpace,2,BigDecimal.ROUND_HALF_DOWN).multiply( DiskUtil.hundred );
+        }
     }
 }

@@ -42,8 +42,7 @@ public class DiskUtil {
         /*host = "192.168.10.72";
         loginName = "root";
         passWord = "root123";
-        systemType = ParamEnum.systemType.Windows.getCode();
-        */
+        systemType = ParamEnum.systemType.Windows.getCode();*/
 
         Connection conn = new Connection(host, sshPort);
         Session ssh = null;
@@ -60,24 +59,21 @@ public class DiskUtil {
 
                 if(ParamEnum.MonitorEnum.MONITOR_SERVER.getName().equals( monitor.getType() )){
                     ServerMonitor serverMonitor = (ServerMonitor) monitor;
-
                 }else if(ParamEnum.MonitorEnum.MONITOR_APPLICATION.getName().equals( monitor.getType() )){
                     ApplicationMonitor applicationMonitor =  (ApplicationMonitor) monitor;
                 }else if(ParamEnum.MonitorEnum.MONITOR_DISK.getName().equals( monitor.getType() )){
                     DiskMonitor diskMonitor =  (DiskMonitor) monitor;
                     String partition = diskMonitor.getPartition();
                     if( ParamEnum.systemType.Windows.getCode().equals( systemType ) ){
-                        String cmd = new StringBuilder("wmic LogicalDisk where \"Caption='").append( partition ).append( ":" ).append( "'\" get FreeSpace,Size /value" ).toString();
+                        String cmd = new StringBuilder("wmic LogicalDisk where \"Caption='").append( partition ).append( "'\" get FreeSpace,Size /value" ).toString();
                         return getDiskByWindows( ssh ,cmd);
-                    }else{
+                    }else if( ParamEnum.systemType.Ubuntu.getCode().equals( systemType ) ){
                         String cmd = "df -hl";
-                        return getDiskByLinux( ssh ,cmd);
+                        return getDiskByLinux( ssh ,cmd,partition);
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             try {
                 if (ssh != null) {
                     ssh.close();
@@ -107,8 +103,8 @@ public class DiskUtil {
         BigDecimal totalSpace = BigDecimal.ZERO;
         BigDecimal freeSpace = BigDecimal.ZERO;
         BigDecimal usedSpace = BigDecimal.ZERO;
-
         ssh.execCommand(cmd);
+        logger.info("命令行======>"+cmd);
         InputStream stdout = new StreamGobbler(ssh.getStdout());
         BufferedReader br = null;
         try {
@@ -138,9 +134,9 @@ public class DiskUtil {
             }
         }
         usedSpace = totalSpace.subtract(freeSpace);
-        //logger.info("总空间大小 : " + totalSpace + "G");
-        //logger.info("剩余空间大小 : " + freeSpace + "G");
-        //logger.info("已用空间大小 : " + usedSpace + "G");
+        logger.info("总空间大小 : " + totalSpace + "G");
+        logger.info("剩余空间大小 : " + freeSpace + "G");
+        logger.info("已用空间大小 : " + usedSpace + "G");
         DiskInfo diskInfo = new DiskInfo(totalSpace,usedSpace,freeSpace);
         return  diskInfo;
     }
@@ -153,9 +149,9 @@ public class DiskUtil {
      * @author  wanghb
      * @edit
      */
-    public static Object getDiskByLinux(Session ssh,String cmd){
+    public static Object getDiskByLinux(Session ssh,String cmd,String partition){
         Map<String, Object> map = new HashMap();
-        BigDecimal totalSpace = BigDecimal.ZERO;
+        BigDecimal totalSpace;
         BigDecimal freeSpace = BigDecimal.ZERO;
         BigDecimal usedSpace = BigDecimal.ZERO;
         BufferedReader br = null;
@@ -166,21 +162,25 @@ public class DiskUtil {
             String len = null;
             String[] strArray = null;
             while ((len = br.readLine()) != null) {
-                //logger.info("结果行======>"+len);
-                int m = 0;
+                System.out.println("结果行======>"+len);
+                int columnIndex  = 0;
                 strArray = len.split(" ");
+
                 for (String tmp : strArray) {
                     if (tmp.trim().length() == 0) {
                         continue;
                     }
-                    ++m;
+                    if(columnIndex == 0 && !tmp.equals( partition )){
+                        break;
+                    }
+                    ++columnIndex;
                     if (tmp.indexOf("G") != -1) {
-                        if (m == 3) {
+                        if (columnIndex == 3) {
                             if (!tmp.equals("") && !tmp.equals("0")) {
                                 usedSpace = usedSpace.add(PowerUtil.getBigDecimal( tmp.substring(0,tmp.length() - 1) ).multiply(memoryUnit)) ;
                             }
                         }
-                        if (m == 4) {
+                        if (columnIndex == 4) {
                             if (!tmp.equals("none") && !tmp.equals("0")) {
                                 freeSpace = freeSpace.add(PowerUtil.getBigDecimal( tmp.substring(0,tmp.length() - 1) ).multiply(memoryUnit)) ;
                             }
@@ -188,12 +188,12 @@ public class DiskUtil {
                         }
                     }
                     if (tmp.indexOf("M") != -1) {
-                        if (m == 3) {
+                        if (columnIndex == 3) {
                             if (!tmp.equals("") && !tmp.equals("0")) {
                                 usedSpace = usedSpace.add(PowerUtil.getBigDecimal( tmp.substring(0,tmp.length() - 1) )) ;
                             }
                         }
-                        if (m == 4) {
+                        if (columnIndex == 4) {
                             if (!tmp.equals("none") && !tmp.equals("0")) {
                                 freeSpace = freeSpace.add(PowerUtil.getBigDecimal( tmp.substring(0,tmp.length() - 1) )) ;
 
@@ -217,9 +217,9 @@ public class DiskUtil {
         usedSpace = usedSpace.divide(memoryUnit,2,BigDecimal.ROUND_HALF_DOWN);
         freeSpace = freeSpace.divide(memoryUnit,2,BigDecimal.ROUND_HALF_DOWN);
         totalSpace = usedSpace.add( freeSpace );
-        //logger.info("已用空间：" + totalSpace +"G");
-        //logger.info("已用空间：" + usedSpace +"G");
-        //logger.info("可用空间：" + freeSpace +"G");
+        logger.info("总空间：" + totalSpace +"G");
+        logger.info("已用空间：" + usedSpace +"G");
+        logger.info("可用空间：" + freeSpace +"G");
         DiskInfo diskInfo = new DiskInfo(totalSpace,usedSpace,freeSpace);
         return  diskInfo;
     }
