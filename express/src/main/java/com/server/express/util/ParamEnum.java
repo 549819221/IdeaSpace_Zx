@@ -41,7 +41,7 @@ public interface ParamEnum {
      */
     enum uploadUrl {
         dataUpload( "dataUpload","上传快递接口"),
-        expressStaffDataUploadUrl( "expressStaffDataUploadUrl","上传快递员接口"),
+        expressStaffDataUpload( "expressStaffDataUpload","上传快递员网点接口"),
         ;
         private String code;
         private String name;

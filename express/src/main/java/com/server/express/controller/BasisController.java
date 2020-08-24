@@ -67,7 +67,7 @@ public class BasisController  {
     public Object expressStaffUpload(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
-            obj = basisService.dataUpload(expressStaff,ParamEnum.uploadUrl.expressStaffDataUploadUrl.getCode());
+            obj = basisService.dataUpload(expressStaff,ParamEnum.uploadUrl.expressStaffDataUpload.getCode());
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );

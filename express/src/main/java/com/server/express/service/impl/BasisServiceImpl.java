@@ -89,7 +89,6 @@ public class BasisServiceImpl implements BasisService {
         if(PowerUtil.isNull( accountNo )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"accountNo(快递方账号)字段不能为空.");
         }
-
         if(PowerUtil.isNull( signature )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"signature(报文签名)字段不能为空.");
         }
@@ -112,7 +111,7 @@ public class BasisServiceImpl implements BasisService {
             String url = "";
             if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
                 url = dataUploadUrl;
-            }else if(ParamEnum.uploadUrl.expressStaffDataUploadUrl.getCode().equals( uploadUrl )){
+            }else if(ParamEnum.uploadUrl.expressStaffDataUpload.getCode().equals( uploadUrl )){
                 url = expressStaffDataUploadUrl;
             }
             Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
