@@ -25,7 +25,6 @@ import java.util.Map;
 public class DiskUtil {
     private static Logger logger = Logger.getLogger( DiskUtil.class);
 
-
     /**
      * 获取磁盘信息
      *
