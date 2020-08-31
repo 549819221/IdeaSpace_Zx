@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/demo/demo.iml" filepath="$PROJECT_DIR$/demo/demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/express/express.iml" filepath="$PROJECT_DIR$/express/express.iml" />
       <module fileurl="file://$PROJECT_DIR$/monitor/monitor.iml" filepath="$PROJECT_DIR$/monitor/monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ticket/ticket.iml" filepath="$PROJECT_DIR$/ticket/ticket.iml" />
     </modules>
   </component>
 </project>

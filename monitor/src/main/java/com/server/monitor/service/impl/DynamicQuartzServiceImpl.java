@@ -85,7 +85,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                     //节点创建的判断
                     if (createTime > referenceTimeTemp) {
                         addJob( taskDo );
-                        //节点修改的判断
+                    //节点修改的判断
                     } else if (lastModifiedTime > referenceTimeTemp) {
                         updateJob( taskDo );
                     }
@@ -134,7 +134,6 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 e.printStackTrace();
             }
         }
-
     }
 
     /**
@@ -211,7 +210,7 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                         state = ParamEnum.yesOrNo.no.getCode().toString();
                         mas.append( "磁盘容量低于阈值,设定的阈值为:" ).append( operateValue ).append( "%,目前剩余:" ).append( percentage ).append( "%,空间总量:" ).append( totalSpace ).append( "G,已使用:" ).append( usedSpace ).append( "G" );
                     }
-                    //剩余空间大小
+                //剩余空间大小
                 } else {
                     if (operateValue.compareTo( diskInfo.getFreeSpace() ) > 0) {
                         state = ParamEnum.yesOrNo.no.getCode().toString();
@@ -270,17 +269,16 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
                 httpStrTemp = PowerUtil.getString( HttpUtil.get( url, null, httpTimeout ));
                 if (!httpStrTemp.contains( httpResult )) {
                     state = ParamEnum.yesOrNo.no.getCode().toString();
-                    mas.append( "http接口返回结果不一致" ).append( ";  " );
+                    mas.append( "http接口返回结果不一致。" );
                     result.append( new StringBuilder( "http接口返回结果不一致,参考值:" ).append( httpResult ).append( ",实际返回值:" ).append( httpStrTemp ).toString()  );
                 }
             } catch (ConnectTimeoutException e) {
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                mas.append( "http请求超时异常" ).append( "; " );
-                result.append( new StringBuilder( "http请求超时异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
+                mas.append( "http请求超时异常。");
+                result.append( new StringBuilder( "http请求超时异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString());
             } catch (Exception e) {
                 logger.error( new StringBuilder("http访问异常,异常信息:").append( ExceptionUtil.getOutputStream( e ) ) );
                 state = ParamEnum.yesOrNo.no.getCode().toString();
-                mas.append( "http访问异常" ).append( "; " );
                 result.append( new StringBuilder( "http访问异常,访问地址:").append( url ).append(";异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString()  );
             }
             state = state == null ? ParamEnum.yesOrNo.yes.getCode().toString() : state;
@@ -289,16 +287,14 @@ public class DynamicQuartzServiceImpl implements DynamicQuartzService {
             monitorLog.setResult( result.toString() );
             monitorLogs.add(monitorLog);
         }
-
     }
-
 
     /**
      * @description  进行TelnetPing监控获取MonitorLog日志
      * @param  objId  节点id
      * @param  ip  监控ip
      * @param  telnetPort  监控端口
-     * @return
+     * @return  返回结果
      * @date  20/08/10 9:52
      * @author  wanghb
      * @edit

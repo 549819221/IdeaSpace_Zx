@@ -1,13 +1,11 @@
-package com.server.express.service.impl;
+package com.server.ticket.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.server.express.dao.PackageSerialDao;
-import com.server.express.entity.*;
-import com.server.express.service.BasisService;
-import com.server.express.util.*;
+import com.server.ticket.entity.*;
+import com.server.ticket.service.BasisService;
+import com.server.ticket.util.*;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -35,10 +34,9 @@ public class BasisServiceImpl implements BasisService {
     @Value("${spring.profiles.active}")
     private String active;
 
-    @Value("${dataUploadUrl}")
-    private String dataUploadUrl;
-    @Value("${expressStaffDataUploadUrl}")
-    private String expressStaffDataUploadUrl;
+
+    @Value("${projectUrl}")
+    private String projectUrl;
 
     @Value("${zip.encode}")
     private  String zipEncode;
@@ -48,8 +46,7 @@ public class BasisServiceImpl implements BasisService {
     @Resource
     private FTPUtil fTPUtil;
 
-    @Autowired
-    private PackageSerialDao packageSerialDao;
+
 
     /**
      * @description  上传数据
@@ -73,15 +70,11 @@ public class BasisServiceImpl implements BasisService {
         if(PowerUtil.isNull( token )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
         }
-        if(!JwtUtil.verify( token ) ){
+        if( !JwtUtil.verify( token ) ){
             return new UploadDataResult( ParamEnum.resultCode.tokenExpired.getCode(),  ParamEnum.resultCode.tokenExpired.getName(),"");
         }
         if(PowerUtil.isNull( serial )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
-        }
-        int count = packageSerialDao.countBySerial(serial);
-        if (count > 0){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 已存在。" ).toString() );
         }
         if(PowerUtil.isNull( encryptData )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"encryptData(主数据)字段不能为空.");
@@ -108,12 +101,7 @@ public class BasisServiceImpl implements BasisService {
             packageSerialInfo.setFtpPath( ftpUploadPath +"/"+ serial + ".zip" );
             tempZip.delete();
         }else{
-            String url = "";
-            if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
-                url = dataUploadUrl;
-            }else if(ParamEnum.uploadUrl.expressStaffDataUpload.getCode().equals( uploadUrl )){
-                url = expressStaffDataUploadUrl;
-            }
+            String url = new StringBuilder().append( projectUrl ).append( uploadUrl ).toString();
             Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),PowerUtil.getString( object ));
@@ -124,7 +112,7 @@ public class BasisServiceImpl implements BasisService {
                   return object;
                 }
             }
-            //FastDFS的上传方式   后期可能会用
+            //FastDFS的上传方式  后边可能会用
             /*try {
                 FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
@@ -136,10 +124,8 @@ public class BasisServiceImpl implements BasisService {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 e.printStackTrace();
             }*/
-
         }
         if(isSuccess){
-            packageSerialDao.save( packageSerialInfo );
             return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
         }else {
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
@@ -172,32 +158,8 @@ public class BasisServiceImpl implements BasisService {
      */
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public UploadDataResult updateStatus(PackageSerialInfo packageSerialParam) {
-        String serial = packageSerialParam.getSerial();
-        String ftpStatus = packageSerialParam.getFtpStatus();
-        String result = packageSerialParam.getResult();
-        if(PowerUtil.isNull( serial )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
-        }
-        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById(serial);
-        if (!packageSerialInfoOptional.isPresent()){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
-        }else {
-            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
-            if (PowerUtil.isNotNull( ftpStatus )) {
-                if (!ParamEnum.ftpStatus.status1.getCode().equals( result )) {
-                    return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder( "ftpStatus(ftp文件状态)字段不符合规范.所传参数: " ).append( result ).toString() );
-                }
-                packageSerialInfo.setFtpStatus( ftpStatus );
-            }
-            if (PowerUtil.isNotNull( result )) {
-                if (!ParamEnum.resultStatus.status1.getCode().equals( result ) && !ParamEnum.resultStatus.status2.getCode().equals( result )) {
-                    return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder("result(上传结果)字段不符合规范.所传参数:" ).append( result ).toString() );
-                }
-                packageSerialInfo.setResult( result );
-            }
-            packageSerialDao.save( packageSerialInfo );
-        }
+    public UploadDataResult updateStatus(String packageSerialParam) {
+
         return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
     }
 }
