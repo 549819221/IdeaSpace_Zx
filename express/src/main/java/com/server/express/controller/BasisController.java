@@ -62,7 +62,7 @@ public class BasisController  {
      * @author  wanghb
      * @edit
      */
-    @PostMapping("/expressStaffUpload")
+    @PostMapping("/expressStaffDataUpload")
     @ResponseBody
     public Object expressStaffUpload(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
