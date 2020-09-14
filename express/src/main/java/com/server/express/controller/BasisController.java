@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * (Basis)表控制层
@@ -30,7 +31,7 @@ public class BasisController  {
      */
     @PostMapping("/getToken")
     @ResponseBody
-    public TokenResult getToken(@RequestBody User user, HttpServletRequest request){
+    public Object getToken(@RequestBody User user, HttpServletRequest request) {
         return basisService.getToken(user,request);
     }
 

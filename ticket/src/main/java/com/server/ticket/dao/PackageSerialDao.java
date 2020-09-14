@@ -1,7 +1,6 @@
-package com.server.express.dao;
+package com.server.ticket.dao;
 
-import com.server.express.entity.PackageSerialInfo;
-import com.server.express.entity.UploadDataInfo;
+import com.server.ticket.entity.PackageSerialInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
 import javax.transaction.Transactional;
 import java.util.List;
 

@@ -13,7 +13,7 @@ import java.io.Serializable;
 * @since 2020-8-14 13:54:48
 */
 @Entity
-@Table(name = "package_serial", schema = "express")
+@Table(name = "package_serial")//, schema = "express"
 @EntityListeners(AuditingEntityListener.class)
 public class PackageSerialInfo extends  PackageSerialInfoAbstract  implements Serializable {
 	public  PackageSerialInfo(){

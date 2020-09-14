@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.server.ticket.util.JsonViewMark;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -19,8 +21,11 @@ import java.util.Date;
 * @since 2020-8-19 11:38:40
 */
 @MappedSuperclass
+@Setter
+@Getter
 @ApiModel(description= "包流水信息( PackageSerialInfoAbstract )实体")
 public class PackageSerialInfoAbstract implements Serializable {
+
 
     @Id
     @Column(name = "serial")
@@ -59,53 +64,23 @@ public class PackageSerialInfoAbstract implements Serializable {
     @ApiModelProperty(value="0.FTP中文件未删除；1.FTP中文件已删除",name=" ftpStatus",required=false)
     private String ftpStatus;
 
-    public String getSerial() {
-    return serial;
-    }
+    @Basic
+    @Column(name = "fastdfs_id")
+    @JsonView(JsonViewMark.SimpleView.class)
+    @ApiModelProperty(value="上传到FastDFS成功后FastDFS返回的ID，之后通过此ID删除FastDFS中保存的文件",name=" fastdfsId",required=false)
+    private String fastdfsId;
 
-    public void setSerial(String serial) {
-    this.serial = serial;
-    }
+    @Basic
+    @Column(name = "fastdfs_status")
+    @JsonView(JsonViewMark.SimpleView.class)
+    @ApiModelProperty(value="0.FastDFS中文件未删除；1.FastDFS中文件已删除",name=" fastdfsStatus",required=false)
+    private String fastdfsStatus;
 
-    public Date getUploadTime() {
-    return uploadTime;
-    }
-
-    public void setUploadTime(Date uploadTime) {
-    this.uploadTime = uploadTime;
-    }
-
-    public String getResult() {
-    return result;
-    }
-
-    public void setResult(String result) {
-    this.result = result;
-    }
-
-    public String getEvent() {
-    return event;
-    }
-
-    public void setEvent(String event) {
-    this.event = event;
-    }
-
-    public String getFtpPath() {
-    return ftpPath;
-    }
-
-    public void setFtpPath(String ftpPath) {
-    this.ftpPath = ftpPath;
-    }
-
-    public String getFtpStatus() {
-    return ftpStatus;
-    }
-
-    public void setFtpStatus(String ftpStatus) {
-    this.ftpStatus = ftpStatus;
-    }
+    @Basic
+    @Column(name = "sync_ftp_status")
+    @JsonView(JsonViewMark.SimpleView.class)
+    @ApiModelProperty(value="同步ftp状态  0.未同步；1.已同步",name=" fastdfsStatus",required=false)
+    private String syncFtpStatus;
 
 
 }

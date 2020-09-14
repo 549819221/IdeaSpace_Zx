@@ -31,7 +31,7 @@ public class BasisController  {
      */
     @PostMapping("/getToken")
     @ResponseBody
-    public TokenResult getToken(@RequestBody User user, HttpServletRequest request){
+    public Object getToken(@RequestBody User user, HttpServletRequest request){
         return basisService.getToken(user,request);
     }
 

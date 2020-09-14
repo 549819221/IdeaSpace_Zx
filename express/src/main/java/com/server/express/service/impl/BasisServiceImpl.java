@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
+import com.server.express.task.ScheduledTasks;
 import com.server.express.util.*;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,7 +45,7 @@ public class BasisServiceImpl implements BasisService {
     @Value("${zip.encode}")
     private  String zipEncode;
 
-    private final String ftpUploadPath = "/data";
+    private final String ftpUploadPath = "/expressData/";
 
     @Resource
     private FTPUtil fTPUtil;
@@ -99,15 +101,12 @@ public class BasisServiceImpl implements BasisService {
         packageSerialInfo.setResult(ParamEnum.resultStatus.status0.getCode());
         packageSerialInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
         packageSerialInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
-        Boolean isSuccess;
+        packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+        packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
+        packageSerialInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( uploadUrl ).toString() );
+        Boolean isSuccess = null;
         if(ParamEnum.properties.dev.getCode().equals( active )){
-            String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
-            File tempZip =  FileEncryptUtil.encryptStreamZip(JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
-            //文件上传
-            isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
-            packageSerialInfo.setFtpPath( ftpUploadPath +"/"+ serial + ".zip" );
-            tempZip.delete();
-        }else{
+            //这个是直接请求接口的数据传输
             String url = "";
             if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
                 url = dataUploadUrl;
@@ -121,22 +120,24 @@ public class BasisServiceImpl implements BasisService {
                 String code = PowerUtil.getString( object.get("code") );
                 isSuccess = ParamEnum.resultCode.success.getCode().equals( code );
                 if(!isSuccess){
-                  return object;
+                    return object;
                 }
             }
-            //FastDFS的上传方式   后期可能会用
-            /*try {
+        }else{
+            try {
                 FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
+                    isSuccess = true;
+                }else{
+                    isSuccess = false;
                 }
             } catch (Exception e) {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 e.printStackTrace();
-            }*/
-
+            }
         }
         if(isSuccess){
             packageSerialDao.save( packageSerialInfo );
@@ -145,7 +146,6 @@ public class BasisServiceImpl implements BasisService {
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
         }
     }
-
 
     /**
      * @description  获取token
@@ -157,9 +157,22 @@ public class BasisServiceImpl implements BasisService {
      * @param request
      */
     @Override
-    public TokenResult getToken(User user, HttpServletRequest request) {
-        String token = JwtUtil.sign(user.getAccount(),user.getPassword());
-        return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+    public Object getToken(User user, HttpServletRequest request) {
+        String account = user.getAccount();
+        String password = user.getPassword();
+        if("".equals( account ) || "".equals( password )){
+            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
+        }
+        if (ScheduledTasks.accountData != null && ScheduledTasks.accountData.size() != 0) {
+            if(password.equals( PowerUtil.getString( ScheduledTasks.accountData.get( account) ) )){
+                String token = JwtUtil.sign(user.getAccount(),user.getPassword());
+                return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+            }else {
+                return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码错误。","");
+            }
+        } else {
+            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户数据录入为空,请联系管理员。","");
+        }
     }
 
     /**

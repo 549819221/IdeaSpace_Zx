@@ -71,6 +71,7 @@ public interface ParamEnum {
     enum resultCode {
         success( "0","成功"),
         error( "-1","失败"),
+        passwordError( "-2","账号或密码错误"),
         tokenExpired( "1003","token过期"),
         paramError( "400","参数异常"),
         ;
@@ -180,6 +181,65 @@ public interface ParamEnum {
         }
         public static String getNameByCode(String code) {
             for (ftpStatus item : ftpStatus.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+    /**
+     * 0.FTP中文件未删除；1.FTP中文件已删除
+     * @author wanghb
+     */
+    enum fastdfsStatus {
+        status0( "0","FastDFS中文件未删除"),
+        status1( "1","FastDFS中文件已删除"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        fastdfsStatus(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (fastdfsStatus item : fastdfsStatus.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+
+    /**
+     * 0.FTP中文件未删除；1.FTP中文件已删除
+     * @author wanghb
+     */
+    enum syncFtpStatus {
+        status0( "0","未同步"),
+        status1( "1","已同步"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        syncFtpStatus(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (syncFtpStatus item : syncFtpStatus.values()) {
                 if (item.getCode().equals(code)) {
                     return item.getName();
                 }

@@ -14,7 +14,7 @@ import java.io.IOException;
  */
 public interface BasisService  {
     Object dataUpload(UploadDataInfo uploadDataInfo, String code) throws IOException, ZipException;
-    TokenResult getToken(User user, HttpServletRequest request);
+    Object getToken(User user, HttpServletRequest request) ;
 
     UploadDataResult updateStatus(PackageSerialInfo packageSerialParam);
 }

@@ -55,7 +55,7 @@ public class HttpUtil {
         // 执行请求，获取相应
         String result = getRespString( get);
         Map<String, Object> resultMaps = (Map) JSON.parse(result);
-        logger.info("get返回结果===>"+resultMaps);
+        //logger.info("get返回结果===>"+resultMaps);
         return resultMaps;
     }
     /**
