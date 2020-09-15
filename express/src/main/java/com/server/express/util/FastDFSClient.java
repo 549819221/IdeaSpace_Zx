@@ -6,7 +6,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.csource.common.NameValuePair;
 import org.csource.fastdfs.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -16,7 +20,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 public class FastDFSClient {
 
     private TrackerClient trackerClient = null;
@@ -26,9 +29,9 @@ public class FastDFSClient {
 
 
     public FastDFSClient(String conf) throws Exception {
-        if (conf.contains("classpath:")) {
+        /*if (conf.contains("classpath:")) {
             conf = conf.replace("classpath:", this.getClass().getResource("/").getPath());
-        }
+        }*/
         ClientGlobal.init(conf);
         trackerClient = new TrackerClient();
         trackerServer = trackerClient.getConnection();
@@ -194,7 +197,7 @@ public class FastDFSClient {
             //获取当前上传文件的扩展名
             String extName = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);*/
             //创建FastDFS的客户端
-            FastDFSClient fastDFSClient =new FastDFSClient("classpath:fdfs_client.conf");
+            //FastDFSClient fastDFSClient =new FastDFSClient("classpath:fdfs_client.conf");
             //获取上传数据的二进制字节码，以扩展名为extName的格式存在文件服务器，返回该文件在文件服务器的路径
             //String fastDFSPath = fastDFSClient.uploadFile(multipartFile.getBytes(), extName);
             //group1/M00/00/02/b-W4ZF82P7eACN6eAAHyc7Xu0aU9374580

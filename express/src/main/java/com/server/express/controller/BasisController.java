@@ -3,8 +3,11 @@ package com.server.express.controller;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
 import com.server.express.util.ExceptionUtil;
+import com.server.express.util.FastDFSClient;
 import com.server.express.util.ParamEnum;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +24,6 @@ public class BasisController  {
     private static Logger logger = Logger.getLogger( BasisController.class );
     @Resource
     private BasisService basisService;
-
     /**
      * @description  令牌获取
      * @return  实体对象

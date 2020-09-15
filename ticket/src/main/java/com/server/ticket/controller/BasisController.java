@@ -4,11 +4,14 @@ import com.server.ticket.entity.*;
 import com.server.ticket.service.BasisService;
 import com.server.ticket.util.ExceptionUtil;
 import com.server.ticket.util.ParamEnum;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * (Basis)表控制层
@@ -31,7 +34,8 @@ public class BasisController  {
      */
     @PostMapping("/getToken")
     @ResponseBody
-    public Object getToken(@RequestBody User user, HttpServletRequest request){
+    public Object getToken(@RequestBody User user, HttpServletRequest request) throws IOException {
+
         return basisService.getToken(user,request);
     }
 

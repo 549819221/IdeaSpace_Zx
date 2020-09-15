@@ -45,6 +45,9 @@ public class BasisServiceImpl implements BasisService {
     @Value("${zip.encode}")
     private  String zipEncode;
 
+    @Value("${fdfsConfPath}")
+    private  String fdfsConfPath;
+
     private final String ftpUploadPath = "/expressData/";
 
     @Resource
@@ -83,7 +86,7 @@ public class BasisServiceImpl implements BasisService {
         }
         int count = packageSerialDao.countBySerial(serial);
         if (count > 0){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 已存在。" ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号) 已存在。" ).toString() );
         }
         if(PowerUtil.isNull( encryptData )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"encryptData(主数据)字段不能为空.");
@@ -125,7 +128,7 @@ public class BasisServiceImpl implements BasisService {
             }
         }else{
             try {
-                FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
@@ -194,7 +197,7 @@ public class BasisServiceImpl implements BasisService {
         }
         Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById(serial);
         if (!packageSerialInfoOptional.isPresent()){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
         }else {
             PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
             if (PowerUtil.isNotNull( ftpStatus )) {

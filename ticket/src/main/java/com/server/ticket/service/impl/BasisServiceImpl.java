@@ -1,12 +1,14 @@
 package com.server.ticket.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.server.ticket.dao.PackageSerialDao;
 import com.server.ticket.entity.*;
 import com.server.ticket.service.BasisService;
 import com.server.ticket.task.ScheduledTasks;
 import com.server.ticket.util.*;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
@@ -41,13 +43,17 @@ public class BasisServiceImpl implements BasisService {
 
     @Value("${zip.encode}")
     private  String zipEncode;
-
+    @Autowired
+    private PackageSerialDao packageSerialDao;
     private final String ftpUploadPath = "/ticket";
+
+
 
     @Resource
     private FTPUtil fTPUtil;
 
-
+    @Value("${fdfsConfPath}")
+    private  String fdfsConfPath;
 
     /**
      * @description  上传数据
@@ -76,6 +82,10 @@ public class BasisServiceImpl implements BasisService {
         }
         if(PowerUtil.isNull( serial )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
+        }
+        int count = packageSerialDao.countBySerial(serial);
+        if (count > 0){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号) 已存在。" ).toString() );
         }
         if(PowerUtil.isNull( encryptData )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"encryptData(主数据)字段不能为空.");
@@ -111,7 +121,7 @@ public class BasisServiceImpl implements BasisService {
             }
         }else{
             try {
-                FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath );
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
@@ -121,15 +131,16 @@ public class BasisServiceImpl implements BasisService {
                     isSuccess = false;
                 }
             } catch (Exception e) {
+                packageSerialDao.save( packageSerialInfo );
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 e.printStackTrace();
             }
-
         }
         if(isSuccess){
+            packageSerialDao.save( packageSerialInfo );
             return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
         }else {
-            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败。","");
         }
     }
 
@@ -147,6 +158,10 @@ public class BasisServiceImpl implements BasisService {
     public Object getToken(User user, HttpServletRequest request) {
         String account = user.getAccount();
         String password = user.getPassword();
+        /*if(ParamEnum.properties.dev.getCode().equals( active )){
+            String token = JwtUtil.sign(user.getAccount(),user.getPassword());
+            return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+        }*/
         if("".equals( account ) || "".equals( password )){
             return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
         }

@@ -71,18 +71,23 @@ public class FTPUtil {
             if(!login()){
                 return false;
             }
+            System.out.println("================================>ftp上传1");
             //设置上传文件的类型为二进制类型
             ftp.setFileType( FTP.BINARY_FILE_TYPE);
+            System.out.println("================================>ftp上传2");
             String[] paths = path.split("/");
             for (int i = 0; i < paths.length; i++){
                 String pathTemp = paths[i];
                 ftp.makeDirectory(pathTemp);
                 ftp.changeWorkingDirectory(pathTemp);
             }
+            System.out.println("================================>ftp上传3");
             String fileName = new String(file.getName().getBytes(LOCAL_CHARSET), SERVER_CHARSET );
             fileName = fileName.substring(0, fileName.indexOf("_")) + fileName.substring(fileName.indexOf("."));
             fileInputStream = new FileInputStream( file );
+            System.out.println("================================>ftp文件读取成功");
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
+            System.out.println("================================>ftp上传服务器");
             return isSuccess;
         } finally {
             if (fileInputStream != null) {

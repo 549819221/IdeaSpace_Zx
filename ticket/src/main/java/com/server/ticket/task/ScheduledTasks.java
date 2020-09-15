@@ -39,6 +39,8 @@ public class ScheduledTasks {
     @Value("${getUserDataUrl}")
     private String getUserDataUrl;
 
+    @Value("${fdfsConfPath}")
+    private  String fdfsConfPath;
     /**
      * @description  每5分钟执行的定时任务
      * @date  20/07/16 10:26
@@ -62,12 +64,13 @@ public class ScheduledTasks {
      * @author  wanghb
      * @edit
      */
-    @Scheduled(cron = "0 */10 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     public void syncFtp() throws Exception {
         logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
-            FastDFSClient fastDFSClient = new FastDFSClient("classpath:fdfs_client.conf");
+
+            FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
             String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
             byte[] data = fastDFSClient.download(fastdfsId);
             UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
