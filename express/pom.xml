@@ -156,7 +156,12 @@
                 <profileActive>dev</profileActive>
             </properties>
         </profile>
-
+        <profile>
+            <id>test</id>
+            <properties>
+                <profileActive>test</profileActive>
+            </properties>
+        </profile>
         <profile>
             <id>pro</id>
             <activation>

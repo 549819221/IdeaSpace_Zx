@@ -118,7 +118,7 @@ public class BasisServiceImpl implements BasisService {
             }
             Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),PowerUtil.getString( object ));
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "调用接口返回为空。",PowerUtil.getString( object ));
             }else{
                 String code = PowerUtil.getString( object.get("code") );
                 isSuccess = ParamEnum.resultCode.success.getCode().equals( code );

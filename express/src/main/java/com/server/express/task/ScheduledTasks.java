@@ -73,6 +73,9 @@ public class ScheduledTasks {
     public void syncFtp() throws Exception {
         logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+        if (packageSerialInfos == null) {
+            return;
+        }
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
             FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
             String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );

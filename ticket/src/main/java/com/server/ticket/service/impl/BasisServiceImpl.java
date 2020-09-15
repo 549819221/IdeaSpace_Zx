@@ -111,7 +111,7 @@ public class BasisServiceImpl implements BasisService {
             String url = new StringBuilder().append( projectUrl ).append( uploadUrl ).toString();
             Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  ParamEnum.resultCode.error.getName(),PowerUtil.getString( object ));
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "调用接口返回为空。",PowerUtil.getString( object ));
             }else{
                 String code = PowerUtil.getString( object.get("code") );
                 isSuccess = ParamEnum.resultCode.success.getCode().equals( code );
@@ -131,7 +131,6 @@ public class BasisServiceImpl implements BasisService {
                     isSuccess = false;
                 }
             } catch (Exception e) {
-                packageSerialDao.save( packageSerialInfo );
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 e.printStackTrace();
             }
