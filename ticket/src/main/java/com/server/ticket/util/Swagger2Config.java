@@ -37,7 +37,7 @@ public class Swagger2Config {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .version("1.0")
-                .title("寄递业务项目：数据上传平台 ")
+                .title("票务业务项目：数据上传平台 ")
                 //.contact(new Contact("  xx团队", "https://www.xx.com/", "kangjia@xx.com"))
                 .description("logservice platform API v1.0")
                 .build();

@@ -191,4 +191,59 @@ public class BasisServiceImpl implements BasisService {
     public UploadDataResult updateStatus(String packageSerialParam) {
         return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
     }
+
+
+    /**
+     * @description 从fastDfs同步到ftp
+     * @param  packageSerialInfo
+     * @return  返回结果
+     * @date  20/09/16 10:08
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception {
+        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+        String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+        byte[] data = fastDFSClient.download(fastdfsId);
+        UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
+        String serial = uploadDataInfo.getSerial();
+        String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
+        File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
+        String ftpUploadPath = packageSerialInfo.getFtpPath();
+        //文件上传
+        Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        tempZip.delete();
+        return isSuccess;
+    }
+
+    /**
+     * @description  重新上传ftp
+     * @param  serial 流水号
+     * @return  返回结果
+     * @date  20/09/16 10:10
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public UploadDataResult reUploadFtp(String serial) {
+        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
+        if (!packageSerialInfoOptional.isPresent()) {
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
+        } else {
+            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            Boolean isSuccess = null;
+            try {
+                isSuccess = uploadFtp(packageSerialInfo);
+            } catch (Exception e) {
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "同步ftp异常。异常信息:"+ExceptionUtil.getOutputStream( e ) );
+            }
+            if (isSuccess) {
+                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+                packageSerialDao.save( packageSerialInfo );
+            }
+            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
+        }
+    }
+
 }

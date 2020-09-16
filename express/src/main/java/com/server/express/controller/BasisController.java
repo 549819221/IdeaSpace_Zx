@@ -37,6 +37,7 @@ public class BasisController  {
      */
     @PostMapping("/getToken")
     @ResponseBody
+    @ApiOperation(value = "获取token", notes = "获取token")
     public Object getToken(@RequestBody User user, HttpServletRequest request) {
         return basisService.getToken(user,request);
     }
@@ -50,6 +51,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload")
     @ResponseBody
+    @ApiOperation(value = "上传快递数据", notes = "上传快递数据")
     public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo) {
         Object obj = null;
         try {
@@ -71,6 +73,7 @@ public class BasisController  {
      */
     @PostMapping("/expressStaffDataUpload")
     @ResponseBody
+    @ApiOperation(value = "上传快递公司数据", notes = "上传快递公司数据")
     public Object expressStaffUpload(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
@@ -91,6 +94,7 @@ public class BasisController  {
      */
     @PostMapping("/updateStatus")
     @ResponseBody
+    @ApiOperation(value = "更新状态", notes = "更新状态")
     public UploadDataResult updateStatus(@RequestBody PackageSerialInfo packageSerialParam){
         try {
             return basisService.updateStatus(packageSerialParam);
@@ -109,7 +113,7 @@ public class BasisController  {
      */
     @GetMapping("/reUploadFtp")
     @ResponseBody
-    @ApiOperation(value = "", notes = "")
+    @ApiOperation(value = "重新打包接口", notes = "重新打包接口")
     public UploadDataResult reUploadFtp(@RequestParam(name = "serial",  required = true) String serial){
         try {
             return basisService.reUploadFtp(serial);

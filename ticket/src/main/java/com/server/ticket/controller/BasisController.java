@@ -37,6 +37,7 @@ public class BasisController  {
      */
     @PostMapping("/getToken")
     @ResponseBody
+    @ApiOperation(value = "令牌获取", notes = "令牌获取")
     public Object getToken(@RequestBody User user, HttpServletRequest request) throws IOException {
 
         return basisService.getToken(user,request);
@@ -52,6 +53,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload/project")
     @ResponseBody
+    @ApiOperation(value = "上传项目数据", notes = "上传项目数据")
     public Object project(@RequestBody UploadDataInfo uploadDataInfo) {
         Object obj = null;
         try {
@@ -73,6 +75,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload/perform")
     @ResponseBody
+    @ApiOperation(value = "上传场次数据", notes = "上传场次数据")
     public Object perform(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
@@ -94,6 +97,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload/ticketSold")
     @ResponseBody
+    @ApiOperation(value = "上传售票数据", notes = "上传售票数据")
     public Object ticketSold(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
@@ -115,6 +119,7 @@ public class BasisController  {
      */
     @PostMapping("/dataUpload/ticketChecked")
     @ResponseBody
+    @ApiOperation(value = "上传验票数据", notes = "上传验票数据")
     public Object ticketChecked(@RequestBody UploadDataInfo expressStaff) {
         Object obj = null;
         try {
@@ -136,10 +141,29 @@ public class BasisController  {
      */
     @PostMapping("/updateStatus")
     @ResponseBody
-    @ApiOperation(value = "", notes = "")
+    @ApiOperation(value = "更新状态", notes = "更新状态")
     public UploadDataResult updateStatus(@RequestBody String packageSerialParam){
         try {
             return basisService.updateStatus(packageSerialParam);
+        } catch (Exception e) {
+            logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );
+        }
+    }
+
+    /**
+     * @description  重新打包接口
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    @GetMapping("/reUploadFtp")
+    @ResponseBody
+    @ApiOperation(value = "重新打包接口", notes = "重新打包接口")
+    public UploadDataResult reUploadFtp(@RequestParam(name = "serial",  required = true) String serial){
+        try {
+            return basisService.reUploadFtp(serial);
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );

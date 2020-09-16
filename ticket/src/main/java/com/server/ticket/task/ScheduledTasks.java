@@ -3,6 +3,7 @@ import com.alibaba.fastjson.JSON;
 import com.server.ticket.dao.PackageSerialDao;
 import com.server.ticket.entity.PackageSerialInfo;
 import com.server.ticket.entity.UploadDataInfo;
+import com.server.ticket.service.BasisService;
 import com.server.ticket.util.*;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -29,6 +30,8 @@ public class ScheduledTasks {
 
     @Autowired
     private PackageSerialDao packageSerialDao;
+    @Autowired
+    private BasisService basisService;
 
     @Resource
     private FTPUtil fTPUtil;
@@ -72,17 +75,7 @@ public class ScheduledTasks {
             return;
         }
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
-            FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-            String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
-            byte[] data = fastDFSClient.download(fastdfsId);
-            UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
-            String serial = uploadDataInfo.getSerial();
-            String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
-            File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
-            String ftpUploadPath = packageSerialInfo.getFtpPath();
-            //文件上传
-            Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
-            tempZip.delete();
+            Boolean isSuccess = basisService.uploadFtp(packageSerialInfo);
             if (isSuccess) {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
                 packageSerialDao.save( packageSerialInfo );

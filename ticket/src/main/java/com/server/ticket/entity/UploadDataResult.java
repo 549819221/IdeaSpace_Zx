@@ -13,6 +13,11 @@ public class UploadDataResult {
         this.data = data;
     }
 
+    public UploadDataResult(String errcode,String errmsg){
+        this.errcode = errcode;
+        this.errmsg = errmsg;
+    }
+
     public String getErrcode() {
         return errcode;
     }
