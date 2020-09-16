@@ -3,6 +3,7 @@ import com.alibaba.fastjson.JSON;
 import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.PackageSerialInfo;
 import com.server.express.entity.UploadDataInfo;
+import com.server.express.service.BasisService;
 import com.server.express.util.*;
 import lombok.SneakyThrows;
 import net.lingala.zip4j.exception.ZipException;
@@ -37,6 +38,8 @@ public class ScheduledTasks {
 
     @Resource
     private FTPUtil fTPUtil;
+    @Resource
+    private com.server.express.service.BasisService basisService;
 
     @Value("${zip.encode}")
     private  String zipEncode;
@@ -77,17 +80,7 @@ public class ScheduledTasks {
             return;
         }
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
-            FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-            String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
-            byte[] data = fastDFSClient.download(fastdfsId);
-            UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
-            String serial = uploadDataInfo.getSerial();
-            String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
-            File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
-            String ftpUploadPath = packageSerialInfo.getFtpPath();
-            //文件上传
-            Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
-            tempZip.delete();
+            Boolean isSuccess = basisService.uploadFtp(packageSerialInfo);
             if (isSuccess) {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
                 packageSerialDao.save( packageSerialInfo );

@@ -5,6 +5,9 @@ import com.server.express.service.BasisService;
 import com.server.express.util.ExceptionUtil;
 import com.server.express.util.FastDFSClient;
 import com.server.express.util.ParamEnum;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +22,7 @@ import java.io.IOException;
  * @since 2020-07-10 14:43:44
  */
 @RestController
+@Api(value = "快递数据相关控制类",  tags = "快递数据相关控制类")
 @RequestMapping("/basis")
 public class BasisController  {
     private static Logger logger = Logger.getLogger( BasisController.class );
@@ -79,7 +83,7 @@ public class BasisController  {
     }
 
     /**
-     * @description  令牌获取
+     * @description  更新状态
      * @return  实体对象
      * @date  2020-07-10 14:43:44
      * @author  wanghb
@@ -90,6 +94,25 @@ public class BasisController  {
     public UploadDataResult updateStatus(@RequestBody PackageSerialInfo packageSerialParam){
         try {
             return basisService.updateStatus(packageSerialParam);
+        } catch (Exception e) {
+            logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );
+        }
+    }
+
+    /**
+     * @description  重新打包接口
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    @GetMapping("/reUploadFtp")
+    @ResponseBody
+    @ApiOperation(value = "", notes = "")
+    public UploadDataResult reUploadFtp(@RequestParam(name = "serial",  required = true) String serial){
+        try {
+            return basisService.reUploadFtp(serial);
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( e.getMessage() ).toString() );

@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
+import com.server.express.service.PackageSerialService;
 import com.server.express.task.ScheduledTasks;
 import com.server.express.util.*;
+import io.swagger.annotations.ApiOperation;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +110,24 @@ public class BasisServiceImpl implements BasisService {
         packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
         packageSerialInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( uploadUrl ).toString() );
         Boolean isSuccess = null;
-        if(ParamEnum.properties.dev.getCode().equals( active )){
+        if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
+            try {
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
+                if (PowerUtil.isNotNull( fastDFSPath )) {
+                    packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
+                    packageSerialInfo.setFastdfsId(fastDFSPath);
+                    isSuccess = true;
+                }else{
+                    isSuccess = false;
+                }
+            } catch (Exception e) {
+                packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
+                logger.error( ExceptionUtil.getOutputStream( e ) );
+                e.printStackTrace();
+
+            }
+        }else  if(ParamEnum.properties.test.getCode().equals( active )){
             //这个是直接请求接口的数据传输
             String url = "";
             if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
@@ -125,21 +144,6 @@ public class BasisServiceImpl implements BasisService {
                 if(!isSuccess){
                     return object;
                 }
-            }
-        }else{
-            try {
-                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-                String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
-                if (PowerUtil.isNotNull( fastDFSPath )) {
-                    packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
-                    packageSerialInfo.setFastdfsId(fastDFSPath);
-                    isSuccess = true;
-                }else{
-                    isSuccess = false;
-                }
-            } catch (Exception e) {
-                packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
-                e.printStackTrace();
             }
         }
         if(isSuccess){
@@ -178,6 +182,9 @@ public class BasisServiceImpl implements BasisService {
         }
     }
 
+    public static void main(String[] args) {
+        System.out.println(JwtUtil.sign("admin","123456"));
+    }
     /**
      * @description  更新包流水信息
      * @param  packageSerialParam  实体
@@ -215,5 +222,58 @@ public class BasisServiceImpl implements BasisService {
             packageSerialDao.save( packageSerialInfo );
         }
         return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
+    }
+
+    /**
+     * @description 从fastDfs同步到ftp
+     * @param  packageSerialInfo
+     * @return  返回结果
+     * @date  20/09/16 10:08
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception {
+        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+        String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+        byte[] data = fastDFSClient.download(fastdfsId);
+        UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
+        String serial = uploadDataInfo.getSerial();
+        String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
+        File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
+        String ftpUploadPath = packageSerialInfo.getFtpPath();
+        //文件上传
+        Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        tempZip.delete();
+        return isSuccess;
+    }
+
+    /**
+     * @description  重新上传ftp
+     * @param  serial 流水号
+     * @return  返回结果
+     * @date  20/09/16 10:10
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public UploadDataResult reUploadFtp(String serial) {
+        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
+        if (!packageSerialInfoOptional.isPresent()) {
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
+        } else {
+            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            Boolean isSuccess = null;
+            try {
+                isSuccess = uploadFtp(packageSerialInfo);
+            } catch (Exception e) {
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "同步ftp异常。异常信息:"+ExceptionUtil.getOutputStream( e ) );
+            }
+            if (isSuccess) {
+                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+                packageSerialDao.save( packageSerialInfo );
+            }
+            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
+        }
     }
 }

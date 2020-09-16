@@ -4,6 +4,8 @@ import com.server.ticket.entity.*;
 import com.server.ticket.service.BasisService;
 import com.server.ticket.util.ExceptionUtil;
 import com.server.ticket.util.ParamEnum;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import java.io.IOException;
  */
 @RestController
 @RequestMapping("/ticket")
+@Api(value = "票务数据相关控制类",  tags = "票务数据相关控制类")
 public class BasisController  {
     private static Logger logger = Logger.getLogger( BasisController.class );
     @Resource
@@ -125,7 +128,7 @@ public class BasisController  {
 
 
     /**
-     * @description  令牌获取
+     * @description  更新状态
      * @return  实体对象
      * @date  2020-07-10 14:43:44
      * @author  wanghb
@@ -133,6 +136,7 @@ public class BasisController  {
      */
     @PostMapping("/updateStatus")
     @ResponseBody
+    @ApiOperation(value = "", notes = "")
     public UploadDataResult updateStatus(@RequestBody String packageSerialParam){
         try {
             return basisService.updateStatus(packageSerialParam);

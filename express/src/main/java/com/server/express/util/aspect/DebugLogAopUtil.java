@@ -1,18 +1,13 @@
-package com.server.ticket.util.aspect;
+package com.server.express.util.aspect;
 
 import com.alibaba.fastjson.JSON;
-import com.server.ticket.util.ParamEnum;
-import com.server.ticket.util.PowerUtil;
+import com.server.express.util.PowerUtil;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -12,6 +12,7 @@ public interface ParamEnum {
      */
     enum properties {
         dev( "dev","本地环境"),
+        test( "test","测试环境"),
         pro( "pro","正式环境"),
         ;
         private String code;

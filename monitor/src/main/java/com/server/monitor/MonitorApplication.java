@@ -6,6 +6,7 @@ import com.server.monitor.util.ScheduledTasks;
 import com.server.monitor.util.SpringContextUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -13,6 +14,7 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 
 @SpringBootApplication
+@EnableSwagger2
 public class MonitorApplication {
     public static void main(String[] args) {
         SpringApplication.run( MonitorApplication.class, args );

@@ -17,4 +17,8 @@ public interface BasisService  {
     Object getToken(User user, HttpServletRequest request) ;
 
     UploadDataResult updateStatus(PackageSerialInfo packageSerialParam);
+
+    Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception;
+
+    UploadDataResult reUploadFtp(String serial);
 }

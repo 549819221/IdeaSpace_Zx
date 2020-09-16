@@ -107,19 +107,7 @@ public class BasisServiceImpl implements BasisService {
         packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
         packageSerialInfo.setFtpPath( new StringBuilder( uploadUrl.replaceAll( "/dataUpload","/ticketData" ) ).toString() );
         Boolean isSuccess = null;
-        if(ParamEnum.properties.dev.getCode().equals( active )){
-            String url = new StringBuilder().append( projectUrl ).append( uploadUrl ).toString();
-            Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
-            if(PowerUtil.isNull( object )){
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "调用接口返回为空。",PowerUtil.getString( object ));
-            }else{
-                String code = PowerUtil.getString( object.get("code") );
-                isSuccess = ParamEnum.resultCode.success.getCode().equals( code );
-                if(!isSuccess){
-                    return object;
-                }
-            }
-        }else{
+        if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
             try {
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath );
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
@@ -132,7 +120,20 @@ public class BasisServiceImpl implements BasisService {
                 }
             } catch (Exception e) {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
+                logger.error( ExceptionUtil.getOutputStream( e ) );
                 e.printStackTrace();
+            }
+        }else{
+            String url = new StringBuilder().append( projectUrl ).append( uploadUrl ).toString();
+            Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
+            if(PowerUtil.isNull( object )){
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "调用接口返回为空。",PowerUtil.getString( object ));
+            }else{
+                String code = PowerUtil.getString( object.get("code") );
+                isSuccess = ParamEnum.resultCode.success.getCode().equals( code );
+                if(!isSuccess){
+                    return object;
+                }
             }
         }
         if(isSuccess){
@@ -157,10 +158,10 @@ public class BasisServiceImpl implements BasisService {
     public Object getToken(User user, HttpServletRequest request) {
         String account = user.getAccount();
         String password = user.getPassword();
-        /*if(ParamEnum.properties.dev.getCode().equals( active )){
+        if(ParamEnum.properties.dev.getCode().equals( active )){
             String token = JwtUtil.sign(user.getAccount(),user.getPassword());
             return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
-        }*/
+        }
         if("".equals( account ) || "".equals( password )){
             return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
         }

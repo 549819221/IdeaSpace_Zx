@@ -1,12 +1,12 @@
-package com.server.ticket.util;
+package com.server.express.util.aspect;
 
-import com.server.ticket.util.aspect.DebugLogAopUtil;
-import com.server.ticket.util.aspect.DebugLogConfig;
+import com.server.express.util.PowerUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 @Aspect
 public class DebugLogAop {
     private final static DebugLogConfig config = new DebugLogConfig(true,true,false,true,false,"entity");
-
+    @Value("${spring.profiles.active}")
+    private String active;
     /**
      * @description  用于打印入参
      * @param  joinPoint
@@ -30,9 +31,11 @@ public class DebugLogAop {
      * @edit
      */
     //execution表达式  可自行定义
-    @Before("execution(* com.server.ticket..*(..)) ) ")
+    @Before("execution(* com.server.express..*(..)) ")
     public void advice(JoinPoint joinPoint) {
+        config.isOpne = PowerUtil.getString( active ).indexOf(  "dev" ) >= 0 ;
         DebugLogAopUtil.advice(joinPoint,config);
+
     }
 
     /**
@@ -44,8 +47,9 @@ public class DebugLogAop {
      * @edit
      */
     //execution表达式  可自行定义
-    @Around("execution(* com.server.ticket..*(..)) ) ")
+    @Around("execution(* com.server.express..*(..)) ")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        config.isOpne = PowerUtil.getString( active ).indexOf(  "dev" ) >= 0 ;
         return DebugLogAopUtil.around( joinPoint,config);
     }
 
