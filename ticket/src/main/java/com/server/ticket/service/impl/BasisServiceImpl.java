@@ -1,7 +1,7 @@
 package com.server.ticket.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.server.ticket.dao.PackageSerialDao;
+import com.server.ticket.dao .PackageSerialDao;
 import com.server.ticket.entity.*;
 import com.server.ticket.service.BasisService;
 import com.server.ticket.task.ScheduledTasks;
@@ -112,6 +112,10 @@ public class BasisServiceImpl implements BasisService {
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath );
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
+                    byte[] data = fastDFSClient.download(fastDFSPath);
+                    if (data == null) {
+                        return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
+                    }
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
                     isSuccess =true;
@@ -119,12 +123,12 @@ public class BasisServiceImpl implements BasisService {
                     isSuccess = false;
                 }
             } catch (Exception e) {
-                packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 logger.error( ExceptionUtil.getOutputStream( e ) );
                 e.printStackTrace();
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。","");
             }
         }else{
-            String url = new StringBuilder().append( projectUrl ).append( uploadUrl ).toString();
+            String url = new StringBuilder( projectUrl ).append( uploadUrl ).toString();
             Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "调用接口返回为空。",PowerUtil.getString( object ));
@@ -206,6 +210,10 @@ public class BasisServiceImpl implements BasisService {
         FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
         String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
         byte[] data = fastDFSClient.download(fastdfsId);
+        if (data == null) {
+            logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
+            return false;
+        }
         UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
         String serial = uploadDataInfo.getSerial();
         String zipPrefix = new StringBuilder(serial).append( "_" ).toString();

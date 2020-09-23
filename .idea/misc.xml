@@ -10,6 +10,7 @@
         <option value="$PROJECT_DIR$/monitor/pom.xml" />
         <option value="$PROJECT_DIR$/demo/pom.xml" />
         <option value="$PROJECT_DIR$/ticket/pom.xml" />
+        <option value="$PROJECT_DIR$/ftpsync/pom.xml" />
       </list>
     </option>
   </component>

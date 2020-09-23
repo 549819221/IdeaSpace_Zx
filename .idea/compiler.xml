@@ -8,13 +8,14 @@
         <outputRelativeToContentRoot value="true" />
         <module name="express" />
         <module name="monitor" />
+        <module name="ftpsync" />
         <module name="ticket" />
-        <module name="demo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="demo" target="1.8" />
       <module name="express" target="1.8" />
+      <module name="ftpsync" target="1.8" />
       <module name="monitor" target="1.8" />
       <module name="ticket" target="1.8" />
     </bytecodeTargetLevel>
@@ -23,6 +24,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="demo" options="-parameters" />
       <module name="express" options="-parameters" />
+      <module name="ftpsync" options="-parameters" />
       <module name="monitor" options="-parameters" />
       <module name="ticket" options="-parameters" />
     </option>
