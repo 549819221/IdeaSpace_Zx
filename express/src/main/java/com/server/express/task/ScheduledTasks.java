@@ -74,7 +74,7 @@ public class ScheduledTasks {
      */
     @Scheduled(cron = "0 */1 * * * ?")
     public void syncFtp() throws Exception {
-        logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
+        /*logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
         if (packageSerialInfos == null) {
             return;
@@ -85,7 +85,7 @@ public class ScheduledTasks {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
                 packageSerialDao.save( packageSerialInfo );
             }
-        }
+        }*/
     }
 
 

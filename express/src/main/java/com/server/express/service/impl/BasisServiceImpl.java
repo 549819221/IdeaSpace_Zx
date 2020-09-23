@@ -115,6 +115,10 @@ public class BasisServiceImpl implements BasisService {
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
+                    byte[] data = fastDFSClient.download(fastDFSPath);
+                    if (data == null) {
+                        return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
+                    }
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
                     isSuccess = true;
@@ -124,8 +128,8 @@ public class BasisServiceImpl implements BasisService {
             } catch (Exception e) {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 logger.error( ExceptionUtil.getOutputStream( e ) );
-                e.printStackTrace();
-
+                //e.printStackTrace();
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。","");
             }
         }else  if(ParamEnum.properties.test.getCode().equals( active )){
             //这个是直接请求接口的数据传输
@@ -167,6 +171,10 @@ public class BasisServiceImpl implements BasisService {
     public Object getToken(User user, HttpServletRequest request) {
         String account = user.getAccount();
         String password = user.getPassword();
+        if(ParamEnum.properties.dev.getCode().equals( active )){
+            String token = JwtUtil.sign(user.getAccount(),user.getPassword());
+            return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+        }
         if("".equals( account ) || "".equals( password )){
             return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
         }
@@ -185,6 +193,7 @@ public class BasisServiceImpl implements BasisService {
     public static void main(String[] args) {
         System.out.println(JwtUtil.sign("admin","123456"));
     }
+
     /**
      * @description  更新包流水信息
      * @param  packageSerialParam  实体
@@ -237,6 +246,10 @@ public class BasisServiceImpl implements BasisService {
         FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
         String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
         byte[] data = fastDFSClient.download(fastdfsId);
+        if (data == null) {
+            logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
+            return false;
+        }
         UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
         String serial = uploadDataInfo.getSerial();
         String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
