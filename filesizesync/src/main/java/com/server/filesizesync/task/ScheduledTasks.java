@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,8 @@ public class ScheduledTasks {
     private FTPUtil fTPUtil;
     @Resource
     private BasisService basisService;
+    @Resource
+    private JdbcTemplate jdbcTemplate;
 
 
     @Value("${fdfsConfPath}")
@@ -44,11 +48,20 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 */1 * * * ?")
     public synchronized void syncFileSiz()  {
         logger.info( "开始同步反写文件大小==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
-        List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getByFileSize( null );
-        if (packageSerialInfos == null) {
-            return;
+        //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getByFileSize( null );
+        Boolean isWhile = true;
+        while (isWhile){
+            isWhile = processWhile();
+
         }
+    }
+
+    private Boolean processWhile() {
+        List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query("select * from package_serial where file_size is null limit 0 , 100 ",new BeanPropertyRowMapper(PackageSerialInfo.class));
         logger.info( "获取数据条数==>" + packageSerialInfos.size() );
+        if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
+            return false;
+        }
         int successCount = 0;
         for (int i = 0; i < packageSerialInfos.size(); i++) {
             PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
@@ -68,6 +81,7 @@ public class ScheduledTasks {
             }
         }
         logger.info( new StringBuilder("成功同步条数==>" ).append( successCount ).toString() );
+        return true;
     }
 
 
