@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/demo/pom.xml" />
         <option value="$PROJECT_DIR$/ticket/pom.xml" />
         <option value="$PROJECT_DIR$/ftpsync/pom.xml" />
+        <option value="$PROJECT_DIR$/filesizesync/pom.xml" />
       </list>
     </option>
   </component>

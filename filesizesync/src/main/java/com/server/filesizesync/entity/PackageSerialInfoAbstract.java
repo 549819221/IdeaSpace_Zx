@@ -1,8 +1,8 @@
-package com.server.ftpsync.entity;
+package com.server.filesizesync.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.server.ftpsync.util.JsonViewMark;
+import com.server.filesizesync.util.JsonViewMark;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

@@ -1,12 +1,8 @@
-package com.server.ftpsync.task;
-
-import com.server.ftpsync.dao.PackageSerialDao;
-import com.server.ftpsync.entity.PackageSerialInfo;
-import com.server.ftpsync.service.BasisService;
-import com.server.ftpsync.util.DateUtil;
-import com.server.ftpsync.util.ExceptionUtil;
-import com.server.ftpsync.util.FTPUtil;
-import com.server.ftpsync.util.ParamEnum;
+package com.server.filesizesync.task;
+import com.server.filesizesync.dao.PackageSerialDao;
+import com.server.filesizesync.entity.PackageSerialInfo;
+import com.server.filesizesync.service.BasisService;
+import com.server.filesizesync.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +33,8 @@ public class ScheduledTasks {
     private BasisService basisService;
 
 
+    @Value("${fdfsConfPath}")
+    private  String fdfsConfPath;
     /**
      * @description  每10分钟执行的定时任务
      * @date  20/07/16 10:26
@@ -45,9 +42,9 @@ public class ScheduledTasks {
      * @edit
      */
     @Scheduled(cron = "0 */1 * * * ?")
-    public synchronized void syncFtp() throws Exception {
-        logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
-        List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+    public synchronized void syncFileSiz()  {
+        logger.info( "开始同步反写文件大小==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
+        List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getByFileSize( null );
         if (packageSerialInfos == null) {
             return;
         }
@@ -55,17 +52,19 @@ public class ScheduledTasks {
         int successCount = 0;
         for (int i = 0; i < packageSerialInfos.size(); i++) {
             PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
-            Boolean isSuccess = false;
             try {
-                isSuccess = basisService.uploadFtp(packageSerialInfo);
+                FastDFSClient  fastDFSClient = new FastDFSClient(fdfsConfPath);
+                String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+                byte[] data = fastDFSClient.download(fastdfsId);
+                if (data == null) {
+                    logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
+                }else{
+                    successCount++;
+                    packageSerialInfo.setFileSize( data.length );
+                    packageSerialDao.save( packageSerialInfo );
+                }
             } catch (Exception e) {
-                logger.error( "这个流水号同步异常==>" + packageSerialInfo.getSerial()+",异常信息:"+ ExceptionUtil.getOutputStream( e ) );
                 e.printStackTrace();
-            }
-            if (isSuccess) {
-                successCount++;
-                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
-                packageSerialDao.save( packageSerialInfo );
             }
         }
         logger.info( new StringBuilder("成功同步条数==>" ).append( successCount ).toString() );

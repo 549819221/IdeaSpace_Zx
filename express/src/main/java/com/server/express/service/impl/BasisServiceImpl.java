@@ -119,6 +119,7 @@ public class BasisServiceImpl implements BasisService {
                     if (data == null) {
                         return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
                     }
+                    packageSerialInfo.setFileSize( data.length );
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
                     isSuccess = true;
@@ -128,8 +129,7 @@ public class BasisServiceImpl implements BasisService {
             } catch (Exception e) {
                 packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
                 logger.error( ExceptionUtil.getOutputStream( e ) );
-                //e.printStackTrace();
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。","");
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。",ExceptionUtil.getOutputStream( e ));
             }
         }else  if(ParamEnum.properties.test.getCode().equals( active )){
             //这个是直接请求接口的数据传输

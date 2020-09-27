@@ -1,7 +1,7 @@
-package com.server.ftpsync.util;
+package com.server.filesizesync.util;
 
 import com.alibaba.fastjson.JSON;
-import com.server.ftpsync.entity.UploadDataInfo;
+import com.server.filesizesync.entity.UploadDataInfo;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;

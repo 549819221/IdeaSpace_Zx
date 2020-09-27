@@ -116,6 +116,7 @@ public class BasisServiceImpl implements BasisService {
                     if (data == null) {
                         return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
                     }
+                    packageSerialInfo.setFileSize( data.length );
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
                     isSuccess =true;
@@ -124,8 +125,7 @@ public class BasisServiceImpl implements BasisService {
                 }
             } catch (Exception e) {
                 logger.error( ExceptionUtil.getOutputStream( e ) );
-                e.printStackTrace();
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。","");
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。",ExceptionUtil.getOutputStream( e ));
             }
         }else{
             String url = new StringBuilder( projectUrl ).append( uploadUrl ).toString();

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/IdeaSpace_Zx.iml" filepath="$PROJECT_DIR$/.idea/IdeaSpace_Zx.iml" />
       <module fileurl="file://$PROJECT_DIR$/express/express.iml" filepath="$PROJECT_DIR$/express/express.iml" />
+      <module fileurl="file://$PROJECT_DIR$/filesizesync/filesizesync.iml" filepath="$PROJECT_DIR$/filesizesync/filesizesync.iml" />
       <module fileurl="file://$PROJECT_DIR$/ftpsync/ftpsync.iml" filepath="$PROJECT_DIR$/ftpsync/ftpsync.iml" />
       <module fileurl="file://$PROJECT_DIR$/monitor/monitor.iml" filepath="$PROJECT_DIR$/monitor/monitor.iml" />
       <module fileurl="file://$PROJECT_DIR$/ticket/ticket.iml" filepath="$PROJECT_DIR$/ticket/ticket.iml" />

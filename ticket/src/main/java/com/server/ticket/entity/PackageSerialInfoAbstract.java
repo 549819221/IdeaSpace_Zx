@@ -82,5 +82,9 @@ public class PackageSerialInfoAbstract implements Serializable {
     @ApiModelProperty(value="同步ftp状态  0.未同步；1.已同步",name=" fastdfsStatus",required=false)
     private String syncFtpStatus;
 
+    @Basic
+    @Column(name = "file_size")
+    @ApiModelProperty(value="文件大小(单位b)",name="fileSize",required=false)
+    private Integer fileSize;
 
 }
