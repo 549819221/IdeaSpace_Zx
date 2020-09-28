@@ -51,11 +51,20 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 */1 * * * ?")
     public synchronized void syncFtp() throws Exception {
         logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
-        List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
-        if (packageSerialInfos == null) {
-            return;
+        Boolean isWhile = true;
+        while (isWhile){
+            isWhile = processWhile();
         }
+    }
+
+
+    private Boolean processWhile() {
+        List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query("select * from package_serial where sync_ftp_status = '0' limit 0 , 100 ",new BeanPropertyRowMapper(PackageSerialInfo.class));
+        //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
         logger.info( "获取数据条数==>" + packageSerialInfos.size() );
+        if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
+            return false;
+        }
         int successCount = 0;
         for (int i = 0; i < packageSerialInfos.size(); i++) {
             PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
@@ -73,6 +82,7 @@ public class ScheduledTasks {
             }
         }
         logger.info( new StringBuilder("成功同步条数==>" ).append( successCount ).toString() );
+        return true;
     }
 
 
