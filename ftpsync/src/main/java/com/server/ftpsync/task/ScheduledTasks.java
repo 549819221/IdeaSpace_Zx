@@ -1,5 +1,6 @@
 package com.server.ftpsync.task;
 
+import com.alibaba.fastjson.JSON;
 import com.server.ftpsync.dao.PackageSerialDao;
 import com.server.ftpsync.entity.PackageSerialInfo;
 import com.server.ftpsync.service.BasisService;
@@ -40,7 +41,10 @@ public class ScheduledTasks {
     private BasisService basisService;
     @Resource
     private JdbcTemplate jdbcTemplate;
-
+    @Value("${ftp.fileSize}")
+    private String ftpFileSize;
+    @Value("${ftp.paths}")
+    private String ftpPaths;
 
     /**
      * @description  每10分钟执行的定时任务
@@ -58,14 +62,44 @@ public class ScheduledTasks {
     }
 
 
-    private Boolean processWhile() {
-        List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query("select * from package_serial where sync_ftp_status = '0' limit 0 , 100 ",new BeanPropertyRowMapper(PackageSerialInfo.class));
-        //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
-        logger.info( "获取数据条数==>" + packageSerialInfos.size() );
-        if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
-            return false;
+    private Boolean processWhile()  {
+        String[] paths = ftpPaths.split( "," );
+        int count = 0;
+        for (String path : paths) {
+            List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query("select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '0' limit 0 , "+ftpFileSize,new BeanPropertyRowMapper(PackageSerialInfo.class));
+            //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+            logger.info( "往ftp这个地址====>"+path+",同步压缩包,包内拥有数据数据条数==>" + packageSerialInfos.size() );
+            if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
+                count ++;
+                continue;
+            }
+            Boolean isSuccess = false;
+            try {
+                isSuccess = basisService.uploadFtp(packageSerialInfos,path);
+            } catch (Exception e) {
+                logger.error( "往ftp这个地址====>"+path+",同步压缩包异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+            }
+            if (isSuccess) {
+
+                try {
+                    for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
+                        packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+                    }
+                    packageSerialDao.saveAll( packageSerialInfos );
+                } catch (Exception e) {
+                    logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+                    logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
+                }
+
+            }
+            logger.info( "往ftp这个地址====>"+path+",同步压缩包,成功同步数据条数==>" + packageSerialInfos.size() );
         }
-        int successCount = 0;
+        if (count == paths.length) {
+            return false;
+        }else {
+            return true;
+        }
+        /*int successCount = 0;
         for (int i = 0; i < packageSerialInfos.size(); i++) {
             PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
             Boolean isSuccess = false;
@@ -80,10 +114,8 @@ public class ScheduledTasks {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
                 packageSerialDao.save( packageSerialInfo );
             }
-        }
-        logger.info( new StringBuilder("成功同步条数==>" ).append( successCount ).toString() );
-        return true;
+        }*/
     }
 
-
+   
 }

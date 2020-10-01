@@ -3,6 +3,8 @@ package com.server.ftpsync.service;
 
 import com.server.ftpsync.entity.PackageSerialInfo;
 
+import java.util.List;
+
 /**
  * (Basis)表服务接口
  * @author wanghb
@@ -11,5 +13,6 @@ import com.server.ftpsync.entity.PackageSerialInfo;
 public interface BasisService  {
 
     Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception;
+    Boolean uploadFtp(List<PackageSerialInfo> packageSerialInfo,String ftpPath) throws Exception;
 
 }

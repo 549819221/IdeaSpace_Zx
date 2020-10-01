@@ -20,9 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * (Basis)表服务实现类
@@ -70,6 +68,39 @@ public class BasisServiceImpl implements BasisService {
         String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
         File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
         String ftpUploadPath = packageSerialInfo.getFtpPath();
+        //文件上传
+        Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        tempZip.delete();
+        return isSuccess;
+    }
+
+
+    /**
+     * @description 从fastDfs同步到ftp
+     * @param  packageSerialInfos
+     * @return  返回结果
+     * @date  20/09/16 10:08
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    public Boolean uploadFtp(List<PackageSerialInfo> packageSerialInfos,String ftpUploadPath) throws Exception {
+        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+        List<String> jsons = new ArrayList<>();
+        for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
+            String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+            byte[] data = fastDFSClient.download(fastdfsId);
+            if (data == null) {
+                logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
+                return false;
+            }
+            UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
+            jsons.add( JSON.toJSONString(uploadDataInfo) );
+        }
+        String serial = UUID.randomUUID().toString().replaceAll( "-","" );
+        String zipPrefix = "files-"+new StringBuilder(serial).append( "_" ).toString();
+        File tempZip =  FileEncryptUtil.encryptStreamZip(  jsons,zipPrefix,zipEncode);
+        //String ftpUploadPath = "/expressData/expressStaffDataUpload";
         //文件上传
         Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
         tempZip.delete();

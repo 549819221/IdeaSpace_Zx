@@ -89,6 +89,62 @@ public class FileEncryptUtil {
         return zipFile;
     }
 
+
+    /**
+     * @description
+     * @param  jsonStrings  JSON串  例: JSON.toJSONString(uploadDataInfo)
+     * @param  zipPrefix  zip前缀
+     * @param  encode  秘钥
+     * @return  返回结果
+     * @date  20/08/19 14:43
+     * @author  wanghb
+     * @edit
+     */
+    public static File encryptStreamZip(List<String> jsonStrings,String zipPrefix, String encode) throws IOException, ZipException {
+        File zipFile = File.createTempFile(zipPrefix,".zip");
+        zipFile.deleteOnExit();
+        ArrayList filesToAdd = new ArrayList();
+        List<File> tempFiles = new ArrayList<>();
+        for (String jsonString : jsonStrings) {
+            File tempFile = getTempFile(jsonString);
+            filesToAdd.add(tempFile);
+            tempFiles.add(tempFile);
+        }
+
+        ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(zipFile));
+        ZipParameters parameters = new ZipParameters();
+        parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+        parameters.setEncryptFiles(true);
+        parameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
+        parameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
+        parameters.setPassword(encode);
+        for (int i = 0; i < filesToAdd.size(); i++) {
+            File file = (File)filesToAdd.get(i);
+            outputStream.putNextEntry(file,parameters);
+
+            if (file.isDirectory()) {
+                outputStream.closeEntry();
+                continue;
+            }
+            InputStream  inputStream = new FileInputStream(file);
+            byte[] readBuff = new byte[4096];
+            int readLen = -1;
+            while ((readLen = inputStream.read(readBuff)) != -1) {
+                outputStream.write(readBuff, 0, readLen);
+            }
+            outputStream.closeEntry();
+            inputStream.close();
+        }
+        for (File tempFile : tempFiles) {
+            tempFile.delete();
+        }
+        outputStream.finish();
+        outputStream.close();
+        return zipFile;
+    }
+
+
     /**
      * @description  获取临时文件
      * @param  jsonString  JSON串
