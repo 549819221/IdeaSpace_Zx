@@ -80,7 +80,6 @@ public class ScheduledTasks {
                 logger.error( "往ftp这个地址====>"+path+",同步压缩包异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
             }
             if (isSuccess) {
-
                 try {
                     for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
                         packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
@@ -117,5 +116,5 @@ public class ScheduledTasks {
         }*/
     }
 
-   
+
 }
