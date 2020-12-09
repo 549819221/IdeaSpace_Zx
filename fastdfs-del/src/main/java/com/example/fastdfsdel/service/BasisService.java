@@ -22,4 +22,6 @@ public interface BasisService  {
     Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception;
 
     UploadDataResult reUploadFtp(String serial);
+
+    UploadDataResult delFastDfs(String serial) throws Exception;
 }

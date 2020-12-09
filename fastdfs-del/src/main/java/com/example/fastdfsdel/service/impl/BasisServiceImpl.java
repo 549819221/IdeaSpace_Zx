@@ -4,7 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.example.fastdfsdel.dao.PackageSerialDao;
 import com.example.fastdfsdel.entity.*;
 import com.example.fastdfsdel.service.BasisService;
-import com.example.fastdfsdel.util.ParamEnum;
+import com.example.fastdfsdel.util.*;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +45,7 @@ public class BasisServiceImpl implements BasisService {
     private final String ftpUploadPath = "/expressData/";
 
     @Resource
-    private com.example.fastdfsdel.util.FTPUtil fTPUtil;
+    private FTPUtil fTPUtil;
 
     @Autowired
     private PackageSerialDao packageSerialDao;
@@ -61,34 +62,35 @@ public class BasisServiceImpl implements BasisService {
      */
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public UploadDataResult updateStatus(com.example.fastdfsdel.entity.PackageSerialInfo packageSerialParam) {
+    public UploadDataResult updateStatus(PackageSerialInfo packageSerialParam) {
         String serial = packageSerialParam.getSerial();
         String ftpStatus = packageSerialParam.getFtpStatus();
         String result = packageSerialParam.getResult();
-        if(com.example.fastdfsdel.util.PowerUtil.isNull( serial )){
-            return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getCode(),  com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
+        if(PowerUtil.isNull( serial )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
         }
-        Optional<com.example.fastdfsdel.entity.PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById(serial);
+        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById(serial);
         if (!packageSerialInfoOptional.isPresent()){
-            return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getCode(),  com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
         }else {
-            com.example.fastdfsdel.entity.PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
-            if (com.example.fastdfsdel.util.PowerUtil.isNotNull( ftpStatus )) {
-                if (!com.example.fastdfsdel.util.ParamEnum.ftpStatus.status1.getCode().equals( result )) {
-                    return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getCode(),  com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getName(), new StringBuilder( "ftpStatus(ftp文件状态)字段不符合规范.所传参数: " ).append( result ).toString() );
+            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            if (PowerUtil.isNotNull( ftpStatus )) {
+                if (!ParamEnum.ftpStatus.status1.getCode().equals( ftpStatus )) {
+                    return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder( "ftpStatus(ftp文件状态)字段不符合规范.所传参数: " ).append( result ).toString() );
                 }
                 packageSerialInfo.setFtpStatus( ftpStatus );
             }
-            if (com.example.fastdfsdel.util.PowerUtil.isNotNull( result )) {
-                if (!com.example.fastdfsdel.util.ParamEnum.resultStatus.status1.getCode().equals( result ) && !com.example.fastdfsdel.util.ParamEnum.resultStatus.status2.getCode().equals( result )) {
-                    return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getCode(),  com.example.fastdfsdel.util.ParamEnum.resultCode.paramError.getName(), new StringBuilder("result(上传结果)字段不符合规范.所传参数:" ).append( result ).toString() );
+            if (PowerUtil.isNotNull( result )) {
+                if (!ParamEnum.resultStatus.status1.getCode().equals( result ) && !ParamEnum.resultStatus.status2.getCode().equals( result )) {
+                    return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder("result(上传结果)字段不符合规范.所传参数:" ).append( result ).toString() );
                 }
                 packageSerialInfo.setResult( result );
             }
             packageSerialDao.save( packageSerialInfo );
         }
-        return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
+        return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
     }
+
 
     /**
      * @description 从fastDfs同步到ftp
@@ -99,18 +101,18 @@ public class BasisServiceImpl implements BasisService {
      * @edit
      */
     @Override
-    public Boolean uploadFtp(com.example.fastdfsdel.entity.PackageSerialInfo packageSerialInfo) throws Exception {
-        com.example.fastdfsdel.util.FastDFSClient fastDFSClient = new com.example.fastdfsdel.util.FastDFSClient(fdfsConfPath);
-        String fastdfsId = com.example.fastdfsdel.util.PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+    public Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception {
+        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+        String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
         byte[] data = fastDFSClient.download(fastdfsId);
         if (data == null) {
             logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
             return false;
         }
-        com.example.fastdfsdel.entity.UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
+        UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
         String serial = uploadDataInfo.getSerial();
         String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
-        File tempZip =  com.example.fastdfsdel.util.FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
+        File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
         String ftpUploadPath = packageSerialInfo.getFtpPath();
         //文件上传
         Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
@@ -129,22 +131,54 @@ public class BasisServiceImpl implements BasisService {
      */
     @Override
     public UploadDataResult reUploadFtp(String serial) {
-        Optional<com.example.fastdfsdel.entity.PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
+        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
         if (!packageSerialInfoOptional.isPresent()) {
-            return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
         } else {
             PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
             Boolean isSuccess = null;
             try {
                 isSuccess = uploadFtp(packageSerialInfo);
             } catch (Exception e) {
-                return new com.example.fastdfsdel.entity.UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.error.getCode(), "同步ftp异常。异常信息:"+ com.example.fastdfsdel.util.ExceptionUtil.getOutputStream( e ) );
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "同步ftp异常。异常信息:"+ ExceptionUtil.getOutputStream( e ) );
             }
             if (isSuccess) {
-                packageSerialInfo.setSyncFtpStatus( com.example.fastdfsdel.util.ParamEnum.syncFtpStatus.status1.getCode() );
+                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
                 packageSerialDao.save( packageSerialInfo );
             }
-            return new UploadDataResult( com.example.fastdfsdel.util.ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
+            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
+        }
+    }
+
+    /**
+     * @description  删除fastDfs
+     * @param  serial
+     * @return  返回结果
+     * @date  2020-12-8 19:19
+     * @author  wanghb
+     * @edit
+     */
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public UploadDataResult delFastDfs(String serial) throws Exception {
+        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
+        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+        if (!packageSerialInfoOptional.isPresent()) {
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
+        } else {
+            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            String fastdfsId = packageSerialInfo.getFastdfsId();
+            Boolean isSuccess = null;
+            try {
+                isSuccess = fastDFSClient.deleteFile( fastdfsId );
+            } catch (Exception e) {
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "删除fastDfs异常。异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+            }
+            if (isSuccess) {
+                packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status1.getCode() );
+                packageSerialDao.save( packageSerialInfo );
+            }
+            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
         }
     }
 }

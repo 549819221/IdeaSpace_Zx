@@ -58,9 +58,28 @@ public class BasisController  {
     @GetMapping("/reUploadFtp")
     @ResponseBody
     @ApiOperation(value = "重新打包接口", notes = "重新打包接口")
-    public com.example.fastdfsdel.entity.UploadDataResult reUploadFtp(@RequestParam(name = "serial",  required = true) String serial){
+    public UploadDataResult reUploadFtp(@RequestParam(name = "serial",  required = true) String serial){
         try {
             return basisService.reUploadFtp(serial);
+        } catch (Exception e) {
+            logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+        }
+    }
+
+    /**
+     * @description  删除fastDf文件
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    @GetMapping("/delFastDfs")
+    @ResponseBody
+    @ApiOperation(value = "删除fastDf文件", notes = "删除fastDf文件")
+    public UploadDataResult delFastDfs(@RequestParam(name = "serial",  required = true) String serial){
+        try {
+            return basisService.delFastDfs(serial);
         } catch (Exception e) {
             logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );

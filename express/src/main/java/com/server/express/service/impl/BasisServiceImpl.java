@@ -217,7 +217,7 @@ public class BasisServiceImpl implements BasisService {
         }else {
             PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
             if (PowerUtil.isNotNull( ftpStatus )) {
-                if (!ParamEnum.ftpStatus.status1.getCode().equals( result )) {
+                if (!ParamEnum.ftpStatus.status1.getCode().equals( ftpStatus )) {
                     return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder( "ftpStatus(ftp文件状态)字段不符合规范.所传参数: " ).append( result ).toString() );
                 }
                 packageSerialInfo.setFtpStatus( ftpStatus );
