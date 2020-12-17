@@ -7,6 +7,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 @Service("fTPUtil")
 @PropertySource({"classpath:application.properties"})
 public class FTPUtil {
+    private static Logger logger = Logger.getLogger( FTPUtil.class );
 
     private FTPClient ftp;
 
@@ -72,9 +74,11 @@ public class FTPUtil {
     public boolean uploadFile(String path,File file) throws IOException{
         FileInputStream fileInputStream = null;
         try {
+            logger.info( "=================>登陆ftp");
             if(!login()){
                 return false;
             }
+            logger.info( "=================>登陆成功");
             //设置上传文件的类型为二进制类型
             ftp.setFileType( FTP.BINARY_FILE_TYPE);
             String[] paths = path.split("/");
@@ -92,7 +96,9 @@ public class FTPUtil {
             if(fileInputStream == null){
                 System.out.println("======>压缩文件fileInputStream为空");
             }
+            logger.info( "=================>准备就绪");
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
+            logger.info( "=================>完成");
             return isSuccess;
         } finally {
             if (fileInputStream != null) {

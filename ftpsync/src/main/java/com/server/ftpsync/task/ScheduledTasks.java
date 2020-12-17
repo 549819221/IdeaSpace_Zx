@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.server.ftpsync.dao.PackageSerialDao;
 import com.server.ftpsync.entity.PackageSerialInfo;
 import com.server.ftpsync.service.BasisService;
-import com.server.ftpsync.util.DateUtil;
-import com.server.ftpsync.util.ExceptionUtil;
-import com.server.ftpsync.util.FTPUtil;
-import com.server.ftpsync.util.ParamEnum;
+import com.server.ftpsync.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +40,10 @@ public class ScheduledTasks {
     private JdbcTemplate jdbcTemplate;
     @Value("${ftp.fileSize}")
     private String ftpFileSize;
+    @Value("${start.uploadTime}")
+    private String startUploadTime;
+    @Value("${end.uploadTime}")
+    private String endUploadTime;
     @Value("${ftp.paths}")
     private String ftpPaths;
 
@@ -66,32 +67,43 @@ public class ScheduledTasks {
         String[] paths = ftpPaths.split( "," );
         int count = 0;
         for (String path : paths) {
-            List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query("select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '0' limit 0 , "+ftpFileSize,new BeanPropertyRowMapper(PackageSerialInfo.class));
+            String sql = "select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '"+ParamEnum.syncFtpStatus.status0.getCode()+"' ";
+            if(PowerUtil.isNotNull( startUploadTime )){
+                sql += " and upload_time >= '"+startUploadTime+"'";
+            }
+            if(PowerUtil.isNotNull( endUploadTime )){
+                sql += " and upload_time <= '"+endUploadTime+"'";
+            }
+            sql += " limit 0 , "+ftpFileSize;
+            logger.info( "此次之行的SQL====>"+sql );
+            List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query(sql,new BeanPropertyRowMapper(PackageSerialInfo.class));
             //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
-            logger.info( "往ftp这个地址====>"+path+",同步压缩包,包内拥有数据数据条数==>" + packageSerialInfos.size() );
+            logger.info( "往ftp这个地址====>"+path+",同步压缩包,查询的总条数==>" + packageSerialInfos.size() );
             if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
                 count ++;
                 continue;
             }
-            Boolean isSuccess = false;
             try {
-                isSuccess = basisService.uploadFtp(packageSerialInfos,path);
+            Boolean isSuccess = basisService.uploadFtp(packageSerialInfos,path);
             } catch (Exception e) {
                 logger.error( "往ftp这个地址====>"+path+",同步压缩包异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
             }
-            if (isSuccess) {
-                try {
-                    for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
-                        packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+            Integer successCount = 0;
+            Integer failCount = 0;
+            try {
+                for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
+                    if(ParamEnum.syncFtpStatus.status2.getCode().equals( packageSerialInfo.getSyncFtpStatus(  ) )){
+                        failCount++;
+                    }else{
+                        successCount++;
                     }
-                    packageSerialDao.saveAll( packageSerialInfos );
-                } catch (Exception e) {
-                    logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
-                    logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
                 }
-
+                packageSerialDao.saveAll( packageSerialInfos );
+            } catch (Exception e) {
+                logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+                logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
             }
-            logger.info( "往ftp这个地址====>"+path+",同步压缩包,成功同步数据条数==>" + packageSerialInfos.size() );
+            logger.info( "往ftp这个地址====>"+path+",同步压缩包,成功同步数据条数==>" + successCount + "失败条数==>"+failCount );
         }
         if (count == paths.length) {
             return false;

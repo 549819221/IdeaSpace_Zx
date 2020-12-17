@@ -226,6 +226,7 @@ public interface ParamEnum {
     enum syncFtpStatus {
         status0( "0","未同步"),
         status1( "1","已同步"),
+        status2( "-1","同步失败"),
         ;
         private String code;
         private String name;

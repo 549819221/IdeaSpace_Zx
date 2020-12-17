@@ -85,24 +85,29 @@ public class BasisServiceImpl implements BasisService {
      */
     @Override
     public Boolean uploadFtp(List<PackageSerialInfo> packageSerialInfos,String ftpUploadPath) throws Exception {
+        logger.info( "=================>进入上传方法");
         FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
         List<String> jsons = new ArrayList<>();
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
             String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
             byte[] data = fastDFSClient.download(fastdfsId);
             if (data == null) {
+                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status2.getCode() );
                 logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
-                return false;
+            }else {
+                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+                UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
+                jsons.add( JSON.toJSONString(uploadDataInfo) );
             }
-            UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
-            jsons.add( JSON.toJSONString(uploadDataInfo) );
         }
         String serial = UUID.randomUUID().toString().replaceAll( "-","" );
         String zipPrefix = "files-"+new StringBuilder(serial).append( "_" ).toString();
         File tempZip =  FileEncryptUtil.encryptStreamZip(  jsons,zipPrefix,zipEncode);
         //String ftpUploadPath = "/expressData/expressStaffDataUpload";
         //文件上传
+        logger.info( "=================>数据完毕开始上传");
         Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        logger.info( "=================>ftp上传成功");
         tempZip.delete();
         return isSuccess;
     }
