@@ -2,6 +2,7 @@ package com.server.express.controller;
 
 import com.server.express.entity.*;
 import com.server.express.service.BasisService;
+import com.server.express.util.DateUtil;
 import com.server.express.util.ExceptionUtil;
 import com.server.express.util.FastDFSClient;
 import com.server.express.util.ParamEnum;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * (Basis)表控制层
@@ -54,10 +56,12 @@ public class BasisController  {
     @ResponseBody
     @ApiOperation(value = "上传快递数据", notes = "上传快递数据")
     public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo) {
+        System.out.println( "=================>快递数据上传开始:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
         Object obj = null;
         try {
             obj = basisService.dataUpload(uploadDataInfo,ParamEnum.uploadUrl.dataUpload.getCode());
         }catch (Exception e) {
+            System.out.println( "=================>快递数据上传结束:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
             if(e.getMessage().indexOf( "PRIMARY" ) > -1){
                 return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "该 " ).append( uploadDataInfo.getSerial() ).append( " serial(流水号) 已存在。" ).toString() );
             }else{
@@ -65,6 +69,7 @@ public class BasisController  {
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             }
         }
+        System.out.println( "=================>快递数据上传结束:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
         return obj;
     }
 
@@ -80,10 +85,12 @@ public class BasisController  {
     @ResponseBody
     @ApiOperation(value = "上传快递公司数据", notes = "上传快递公司数据")
     public Object expressStaffUpload(@RequestBody UploadDataInfo expressStaff) {
+        System.out.println( "=================>快递网点数据上传开始:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
         Object obj = null;
         try {
             obj = basisService.dataUpload(expressStaff,ParamEnum.uploadUrl.expressStaffDataUpload.getCode());
         }catch (Exception e) {
+            System.out.println( "=================>快递网点数据上传结束:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
             if(e.getMessage().indexOf( "PRIMARY" ) > -1){
                 return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "该 " ).append( expressStaff.getSerial() ).append( " serial(流水号) 已存在。" ).toString() );
             }else{
@@ -91,6 +98,7 @@ public class BasisController  {
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             }
         }
+        System.out.println( "=================>快递网点数据上传结束:"+ DateUtil.toString( new Date(),DateUtil.DATE_LONG ) );
         return obj;
     }
 

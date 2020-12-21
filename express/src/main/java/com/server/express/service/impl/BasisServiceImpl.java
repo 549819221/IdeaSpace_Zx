@@ -115,11 +115,11 @@ public class BasisServiceImpl implements BasisService {
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
                 String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
-                    byte[] data = fastDFSClient.download(fastDFSPath);
+                    /*byte[] data = fastDFSClient.download(fastDFSPath);
                     if (data == null) {
                         return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
                     }
-                    packageSerialInfo.setFileSize( data.length );
+                    packageSerialInfo.setFileSize( data.length );*/
                     packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialInfo.setFastdfsId(fastDFSPath);
                     isSuccess = true;

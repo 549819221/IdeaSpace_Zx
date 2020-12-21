@@ -52,6 +52,7 @@ public class FTPUtil {
             LOCAL_CHARSET = "UTF-8";
         }
         ftp.setControlEncoding(LOCAL_CHARSET);
+        ftp.enterLocalPassiveMode();
         return true;
     }
 

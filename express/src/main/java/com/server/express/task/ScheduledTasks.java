@@ -33,6 +33,9 @@ public class ScheduledTasks {
 
     public static Map<String, Object> accountData = new HashMap<>();
 
+
+    @Value("${spring.profiles.active}")
+    private String active;
     @Autowired
     private PackageSerialDao packageSerialDao;
 
@@ -59,8 +62,16 @@ public class ScheduledTasks {
     public void syncAccountData()  {
         logger.info( "开始同步账号数据==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         try {
-            Map<String, Object> object = (Map<String, Object>)HttpUtil.get( getUserDataUrl, new HashMap<>() ).get( "data" );
-            accountData = object;
+            if(ParamEnum.properties.dev.getCode().equals( active )){
+                Map<String, Object> temp = new HashMap<>();
+                temp.put( "admin","123456" );
+                accountData = temp;
+            }else {
+                Map<String, Object> object = (Map<String, Object>)HttpUtil.get( getUserDataUrl, new HashMap<>() ).get( "data" );
+                accountData = object;
+            }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
