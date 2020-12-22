@@ -22,10 +22,10 @@ import java.util.Date;
 import java.util.List;
 public class FastDFSClient {
 
-    private TrackerClient trackerClient = null;
+    private static TrackerClient trackerClient = null;
     private TrackerServer trackerServer = null;
     private StorageServer storageServer = null;
-    private StorageClient1 storageClient = null;
+    private static StorageClient1 storageClient = null;
 
 
     public FastDFSClient(String conf) throws Exception {
@@ -33,10 +33,14 @@ public class FastDFSClient {
             conf = conf.replace("classpath:", this.getClass().getResource("/").getPath());
         }*/
         ClientGlobal.init(conf);
-        trackerClient = new TrackerClient();
+        if (trackerClient == null) {
+            trackerClient = new TrackerClient();
+        }
         trackerServer = trackerClient.getConnection();
         storageServer = null;
-        storageClient = new StorageClient1(trackerServer, storageServer);
+        if (storageClient == null) {
+            storageClient = new StorageClient1(trackerServer, storageServer);
+        }
     }
 
     /**
@@ -103,7 +107,8 @@ public class FastDFSClient {
      * @edit
      */
     public String uploadFile(byte[] fileContent) throws Exception {
-        return uploadFile(fileContent, null, null);
+        String path = uploadFile(fileContent, null, null);
+        return path;
     }
 
     /**
