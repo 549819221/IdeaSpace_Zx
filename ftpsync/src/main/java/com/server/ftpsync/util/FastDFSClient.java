@@ -20,10 +20,14 @@ public class FastDFSClient {
             conf = conf.replace("classpath:", this.getClass().getResource("/").getPath());
         }*/
         ClientGlobal.init(conf);
-        trackerClient = new TrackerClient();
+        if (trackerClient == null) {
+            trackerClient = new TrackerClient();
+        }
         trackerServer = trackerClient.getConnection();
         storageServer = null;
-        storageClient = new StorageClient1(trackerServer, storageServer);
+        if (storageClient == null) {
+            storageClient = new StorageClient1(trackerServer, storageServer);
+        }
     }
 
     /**
@@ -129,6 +133,14 @@ public class FastDFSClient {
      */
     public  byte[] download(String fastDFSPath) throws Exception{
         byte[] bytes = storageClient.download_file1(fastDFSPath);
+        if (trackerServer != null) {
+            trackerServer.close();
+            trackerServer = null;
+        }
+        if (storageServer != null) {
+            storageServer.close();
+            storageServer = null;
+        }
         return bytes;
     }
 

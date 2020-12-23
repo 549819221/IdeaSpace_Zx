@@ -86,11 +86,14 @@ public class BasisServiceImpl implements BasisService {
     @Override
     public Boolean uploadFtp(List<PackageSerialInfo> packageSerialInfos,String ftpUploadPath) throws Exception {
         logger.info( "=================>进入上传方法");
-        FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
         List<String> jsons = new ArrayList<>();
         for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
             String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
-            byte[] data = fastDFSClient.download(fastdfsId);
+            byte[] data = null;
+            synchronized (this){
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                data = fastDFSClient.download(fastdfsId);
+            }
             if (data == null) {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status2.getCode() );
                 logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );

@@ -25,7 +25,7 @@ public class FastDFSClient {
     private static TrackerClient trackerClient = null;
     private TrackerServer trackerServer = null;
     private StorageServer storageServer = null;
-    private static StorageClient1 storageClient = null;
+    private StorageClient1 storageClient = null;
 
 
     public FastDFSClient(String conf) throws Exception {
@@ -38,9 +38,7 @@ public class FastDFSClient {
         }
         trackerServer = trackerClient.getConnection();
         storageServer = null;
-        if (storageClient == null) {
-            storageClient = new StorageClient1(trackerServer, storageServer);
-        }
+        storageClient = new StorageClient1(trackerServer, storageServer);
     }
 
     /**
@@ -108,6 +106,15 @@ public class FastDFSClient {
      */
     public String uploadFile(byte[] fileContent) throws Exception {
         String path = uploadFile(fileContent, null, null);
+        if (trackerServer != null) {
+            trackerServer.close();
+            trackerServer = null;
+
+        }
+        if (storageServer != null) {
+            storageServer.close();
+            storageServer = null;
+        }
         return path;
     }
 

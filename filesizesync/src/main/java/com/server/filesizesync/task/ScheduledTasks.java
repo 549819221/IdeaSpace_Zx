@@ -66,9 +66,12 @@ public class ScheduledTasks {
         for (int i = 0; i < packageSerialInfos.size(); i++) {
             PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
             try {
-                FastDFSClient  fastDFSClient = new FastDFSClient(fdfsConfPath);
                 String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
-                byte[] data = fastDFSClient.download(fastdfsId);
+                byte[] data = null;
+                synchronized(this) {
+                    FastDFSClient fastDFSClient = new FastDFSClient( fdfsConfPath );
+                    data = fastDFSClient.download( fastdfsId );
+                }
                 if (data == null) {
                     logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
                 }else{

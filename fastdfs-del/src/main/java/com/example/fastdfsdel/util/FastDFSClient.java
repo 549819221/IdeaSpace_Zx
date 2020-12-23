@@ -20,10 +20,14 @@ public class FastDFSClient {
             conf = conf.replace("classpath:", this.getClass().getResource("/").getPath());
         }*/
         ClientGlobal.init(conf);
-        trackerClient = new TrackerClient();
+        if (trackerClient == null) {
+            trackerClient = new TrackerClient();
+        }
         trackerServer = trackerClient.getConnection();
         storageServer = null;
-        storageClient = new StorageClient1(trackerServer, storageServer);
+        if (storageClient == null) {
+            storageClient = new StorageClient1(trackerServer, storageServer);
+        }
     }
 
     /**

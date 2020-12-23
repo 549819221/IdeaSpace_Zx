@@ -112,8 +112,11 @@ public class BasisServiceImpl implements BasisService {
         Boolean isSuccess = null;
         if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
             try {
-                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-                String fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
+                String fastDFSPath = "";
+                synchronized(this){
+                    FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                    fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
+                }
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     /*byte[] data = fastDFSClient.download(fastDFSPath);
                     if (data == null) {
