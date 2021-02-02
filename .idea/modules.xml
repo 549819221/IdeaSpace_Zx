@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp.iml" filepath="$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp.iml" />
       <module fileurl="file://$PROJECT_DIR$/fastdfs-del/Fastdfs文件删除.iml" filepath="$PROJECT_DIR$/fastdfs-del/Fastdfs文件删除.iml" />
       <module fileurl="file://$PROJECT_DIR$/express/寄递上传.iml" filepath="$PROJECT_DIR$/express/寄递上传.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fastdfs-test/寄递上传测试.iml" filepath="$PROJECT_DIR$/fastdfs-test/寄递上传测试.iml" />
       <module fileurl="file://$PROJECT_DIR$/filesizesync/文件大小统计.iml" filepath="$PROJECT_DIR$/filesizesync/文件大小统计.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/智协项目(初期).iml" filepath="$PROJECT_DIR$/.idea/智协项目(初期).iml" />
       <module fileurl="file://$PROJECT_DIR$/monitor/监控项目.iml" filepath="$PROJECT_DIR$/monitor/监控项目.iml" />

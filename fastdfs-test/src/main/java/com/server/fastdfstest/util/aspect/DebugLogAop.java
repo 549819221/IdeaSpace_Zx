@@ -1,6 +1,6 @@
-package com.server.express.util.aspect;
+package com.server.fastdfstest.util.aspect;
 
-import com.server.express.util.PowerUtil;
+import com.server.fastdfstest.util.PowerUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 public class DebugLogAop {
-    private final static DebugLogConfig config = new DebugLogConfig(true,true,false,true,false,"entity");
+    private final static DebugLogConfig config = new DebugLogConfig(false,false,false,false,false,"entity");
     @Value("${spring.profiles.active}")
     private String active;
     /**
@@ -31,7 +31,7 @@ public class DebugLogAop {
      * @edit
      */
     //execution表达式  可自行定义
-    @Before("execution(* com.server.express..*(..)) ")
+    @Before("execution(* com.server.fastdfstest..*(..)) ")
     public void advice(JoinPoint joinPoint) {
         config.isOpne = PowerUtil.getString( active ).indexOf(  "dev" ) >= 0 ;
         DebugLogAopUtil.advice(joinPoint,config);
@@ -47,7 +47,7 @@ public class DebugLogAop {
      * @edit
      */
     //execution表达式  可自行定义
-    @Around("execution(* com.server.express..*(..)) ")
+    @Around("execution(* com.server.fastdfstest..*(..)) ")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         config.isOpne = PowerUtil.getString( active ).indexOf(  "dev" ) >= 0 ;
         return DebugLogAopUtil.around( joinPoint,config);
