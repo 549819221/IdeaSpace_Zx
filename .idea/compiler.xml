@@ -12,6 +12,7 @@
         <module name="FastDfs同步到Ftp" />
         <module name="Fastdfs文件删除" />
         <module name="寄递上传" />
+        <module name="旅馆上传" />
         <module name="票务上传" />
       </profile>
     </annotationProcessing>
@@ -22,6 +23,7 @@
       <module name="寄递上传" target="1.8" />
       <module name="寄递上传测试" target="1.8" />
       <module name="文件大小统计" target="1.8" />
+      <module name="旅馆上传" target="1.8" />
       <module name="监控项目" target="1.8" />
       <module name="票务上传" target="1.8" />
     </bytecodeTargetLevel>
@@ -34,6 +36,7 @@
       <module name="寄递上传" options="-parameters" />
       <module name="寄递上传测试" options="-parameters" />
       <module name="文件大小统计" options="-parameters" />
+      <module name="旅馆上传" options="-parameters" />
       <module name="监控项目" options="-parameters" />
       <module name="票务上传" options="-parameters" />
     </option>

@@ -68,10 +68,8 @@ public class ScheduledTasks {
             try {
                 String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
                 byte[] data = null;
-                synchronized(this) {
-                    FastDFSClient fastDFSClient = new FastDFSClient( fdfsConfPath );
-                    data = fastDFSClient.download( fastdfsId );
-                }
+                FastDFSClient fastDFSClient = new FastDFSClient( fdfsConfPath );
+                data = fastDFSClient.download( fastdfsId );
                 if (data == null) {
                     logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
                 }else{
