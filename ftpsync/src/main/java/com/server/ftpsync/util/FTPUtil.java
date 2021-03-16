@@ -76,11 +76,11 @@ public class FTPUtil {
     public boolean uploadFile(String path,File file) throws IOException{
         FileInputStream fileInputStream = null;
         try {
-            logger.info( "=================>登陆ftp");
+            //logger.info( "=================>登陆ftp");
             if(!login()){
                 return false;
             }
-            logger.info( "=================>登陆成功");
+            //logger.info( "=================>登陆成功");
             //设置上传文件的类型为二进制类型
             ftp.setFileType( FTP.BINARY_FILE_TYPE);
             String[] paths = path.split("/");
@@ -93,14 +93,14 @@ public class FTPUtil {
             fileName = fileName.substring(0, fileName.indexOf("_")) + fileName.substring(fileName.indexOf("."));
             fileInputStream = new FileInputStream( file );
             if(fileName == null){
-                System.out.println("======>压缩文件名为空");
+                //System.out.println("======>压缩文件名为空");
             }
             if(fileInputStream == null){
-                System.out.println("======>压缩文件fileInputStream为空");
+                //System.out.println("======>压缩文件fileInputStream为空");
             }
-            logger.info( "=================>准备就绪");
+            //logger.info( "=================>准备就绪");
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
-            logger.info( "=================>完成");
+            //logger.info( "=================>完成");
             return isSuccess;
         } finally {
             if (fileInputStream != null) {

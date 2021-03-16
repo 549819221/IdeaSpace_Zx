@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,8 @@ public class ScheduledTasks {
     @Resource
     private BasisService basisService;
     @Resource
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @Resource
     private JdbcTemplate jdbcTemplate;
     @Value("${ftp.fileSize}")
     private String ftpFileSize;
@@ -53,13 +56,15 @@ public class ScheduledTasks {
      * @author  wanghb
      * @edit
      */
-    @Scheduled(cron = "0 */1 * * * ?")
+    //@Scheduled(cron = "0 */1 * * * ?")
     public synchronized void syncFtp() throws Exception {
         logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         Boolean isWhile = true;
+        Date startDate = new Date();
         while (isWhile){
             isWhile = processWhile();
         }
+        System.out.println("=================>共耗时"+((System.currentTimeMillis() - startDate.getTime()) / 1000)+"秒");
     }
 
 
@@ -75,7 +80,7 @@ public class ScheduledTasks {
                 sql += " and upload_time <= '"+endUploadTime+"'";
             }
             sql += " limit 0 , "+ftpFileSize;
-            logger.info( "此次之行的SQL====>"+sql );
+            logger.info( "此次之行的SQL=====>"+sql );
             List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query(sql,new BeanPropertyRowMapper(PackageSerialInfo.class));
             //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
             logger.info( "往ftp这个地址====>"+path+",同步压缩包,查询的总条数==>" + packageSerialInfos.size() );
@@ -98,7 +103,7 @@ public class ScheduledTasks {
                         successCount++;
                     }
                 }
-                packageSerialDao.saveAll( packageSerialInfos );
+                namedParameterJdbcTemplate.batchUpdate("update package_serial set sync_ftp_status = :syncFtpStatus where serial = :serial",JdbcTemplateUtil.ListBeanPropSource( packageSerialInfos ) );
             } catch (Exception e) {
                 logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
                 logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
@@ -110,22 +115,6 @@ public class ScheduledTasks {
         }else {
             return true;
         }
-        /*int successCount = 0;
-        for (int i = 0; i < packageSerialInfos.size(); i++) {
-            PackageSerialInfo packageSerialInfo = packageSerialInfos.get( i );
-            Boolean isSuccess = false;
-            try {
-                isSuccess = basisService.uploadFtp(packageSerialInfo);
-            } catch (Exception e) {
-                logger.error( "这个流水号同步异常==>" + packageSerialInfo.getSerial()+",异常信息:"+ ExceptionUtil.getOutputStream( e ) );
-                e.printStackTrace();
-            }
-            if (isSuccess) {
-                successCount++;
-                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
-                packageSerialDao.save( packageSerialInfo );
-            }
-        }*/
     }
 
 
