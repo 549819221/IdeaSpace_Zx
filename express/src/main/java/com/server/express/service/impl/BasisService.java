@@ -1,10 +1,10 @@
 package com.server.express.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.server.express.ExpressApplication;
 import com.server.express.dao.PackageSerialDao;
+import com.server.express.dao.PackageSerialLgDao;
 import com.server.express.entity.*;
-import com.server.express.service.BasisService;
-import com.server.express.service.PackageSerialService;
 import com.server.express.task.ScheduledTasks;
 import com.server.express.util.*;
 import io.swagger.annotations.ApiOperation;
@@ -12,6 +12,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
@@ -32,20 +33,24 @@ import java.util.Optional;
  */
 @Service("basisService")
 @PropertySource({"classpath:application.properties"})
-public class BasisServiceImpl implements BasisService {
+public class BasisService {
 
-    private static Logger logger = Logger.getLogger( BasisServiceImpl.class );
+    private static Logger logger = Logger.getLogger( BasisService.class );
 
     @Value("${spring.profiles.active}")
     private String active;
 
     @Value("${dataUploadUrl}")
     private String dataUploadUrl;
+
     @Value("${expressStaffDataUploadUrl}")
     private String expressStaffDataUploadUrl;
 
     @Value("${zip.encode}")
     private  String zipEncode;
+
+    @Value("${publicKeyUrl}")
+    private String publicKeyUrl;
 
     @Value("${fdfsConfPath}")
     private  String fdfsConfPath;
@@ -57,6 +62,165 @@ public class BasisServiceImpl implements BasisService {
 
     @Autowired
     private PackageSerialDao packageSerialDao;
+    @Autowired
+    private PackageSerialLgDao packageSerialLgDao;
+
+
+    /**
+     * @description  获取token
+     * @return 返回结果
+     * @date 20/07/10 15:00
+     * @author wanghb
+     * @edit
+     * @param user
+     * @param request
+     */
+
+    public Object getToken(User user, HttpServletRequest request) {
+        String account = user.getAccount();
+        String password = user.getPassword();
+        if(ParamEnum.properties.dev.getCode().equals( active )){
+            String token = JwtUtil.sign(user.getAccount(),user.getPassword());
+            return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+        }
+        if("".equals( account ) || "".equals( password )){
+            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
+        }
+        if (ScheduledTasks.accountData != null && ScheduledTasks.accountData.size() != 0) {
+            if(password.equals( PowerUtil.getString( ScheduledTasks.accountData.get( account) ) )){
+                String token = JwtUtil.sign(user.getAccount(),user.getPassword());
+                return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
+            }else {
+                return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码错误。","");
+            }
+        } else {
+            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户数据录入为空,请联系管理员。","");
+        }
+    }
+
+    /**
+     * @description  获取token
+     * @return 返回结果
+     * @date 20/07/10 15:00
+     * @author wanghb
+     * @edit
+     */
+    public Object getPublicKey(Map<String, Object> params) {
+        String token = PowerUtil.getString( params.get("token") );
+        if(PowerUtil.isNull( token )){
+            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "token字段不能为空",".");
+        }
+        if(!JwtUtil.verify( token ) ){
+            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "token过期或不存在","");
+        }
+        if (PowerUtil.isNull( ScheduledTasks.publicKey )) {
+            try {
+                syncPublicKey();
+            } catch (IOException e) {
+                return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "获取公钥接口异常,请联系管理员。","");
+            }
+        }
+        return new PublicKeyResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),ScheduledTasks.publicKey);
+    }
+
+    /**
+     * @description  请求接口获取publicKey
+     * @param
+     * @return  返回结果
+     * @date  2021-2-24 9:30
+     * @author  wanghb
+     * @edit
+     */
+    public void syncPublicKey() throws IOException {
+        if(ParamEnum.properties.dev.getCode().equals( active )){
+            ScheduledTasks.publicKey = "04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A";
+        }else {
+            Map<String, Object> object = (Map<String, Object>)HttpUtil.get( publicKeyUrl, new HashMap<>() ).get( "data" );
+            ScheduledTasks.publicKey = PowerUtil.getString( object.get("Data") );
+        }
+    }
+
+    /**
+     * @description  上传
+     * @param  uploadDataSm2Info
+     * @return  返回结果
+     * @date  2021-2-24 9:39
+     * @author  wanghb
+     * @edit
+     */
+    public Object dataUploadSm2(UploadDataSm2Info uploadDataSm2Info) {
+        String serial = uploadDataSm2Info.getSerial();
+        String encryptData = uploadDataSm2Info.getData();
+        String accountNo = uploadDataSm2Info.getAccountNo();
+        String token = uploadDataSm2Info.getToken();
+        String publicKey = uploadDataSm2Info.getPublicKey();
+        String uploadUrl = ParamEnum.uploadUrl.lgDataUpload.getCode();
+        if(PowerUtil.isNull( token )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
+        }
+        if(!JwtUtil.verify( token ) ){
+            return new UploadDataResult( ParamEnum.resultCode.tokenExpired.getCode(),  ParamEnum.resultCode.tokenExpired.getName(),"");
+        }
+        if(PowerUtil.isNull( serial )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
+        }
+        int count = packageSerialDao.countBySerial(serial);
+        if (count > 0){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号) 已存在。" ).toString() );
+        }
+        if(PowerUtil.isNull( encryptData )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"data(主加密数据)字段不能为空.");
+        }
+        if(PowerUtil.isNull( accountNo )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"accountNo(账号)字段不能为空.");
+        }
+        if(PowerUtil.isNull( publicKey )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"publicKey(公钥)字段不能为空.");
+        }
+
+        PackageSerialLgInfo packageSerialLgInfo = new PackageSerialLgInfo();
+        packageSerialLgInfo.setSerial(serial);
+        packageSerialLgInfo.setUploadTime(new Date() );
+        packageSerialLgInfo.setResult(ParamEnum.resultStatus.status0.getCode());
+        packageSerialLgInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
+        packageSerialLgInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
+        packageSerialLgInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+        packageSerialLgInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
+        packageSerialLgInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( uploadUrl ).toString() );
+        packageSerialLgInfo.setPublicKey( publicKey );
+        Boolean isSuccess = null;
+        if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
+            try {
+                String fastDFSPath = "";
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataSm2Info).getBytes());
+                if (PowerUtil.isNotNull( fastDFSPath )) {
+                    /*byte[] data = fastDFSClient.download(fastDFSPath);
+                    if (data == null) {
+                        return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
+                    }
+                    packageSerialInfo.setFileSize( data.length );*/
+                    packageSerialLgInfo.setResult(ParamEnum.resultStatus.status1.getCode());
+                    packageSerialLgInfo.setFastdfsId(fastDFSPath);
+                    isSuccess = true;
+                }else{
+                    isSuccess = false;
+                }
+            } catch (Exception e) {
+                packageSerialLgInfo.setResult(ParamEnum.resultStatus.status2.getCode());
+                logger.error( ExceptionUtil.getOutputStream( e ) );
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。",ExceptionUtil.getOutputStream( e ));
+            }
+        }else  if(ParamEnum.properties.test.getCode().equals( active )){
+
+        }
+        if(isSuccess){
+            packageSerialLgDao.save( packageSerialLgInfo );
+            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
+        }else {
+            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
+        }
+    }
 
     /**
      * @description  上传数据
@@ -67,7 +231,7 @@ public class BasisServiceImpl implements BasisService {
      * @param uploadDataInfo
      * @param uploadUrl
      */
-    @Override
+
     @Transactional(rollbackOn = Exception.class)
     public Object dataUpload(UploadDataInfo uploadDataInfo, String uploadUrl) throws IOException, ZipException {
 
@@ -113,10 +277,8 @@ public class BasisServiceImpl implements BasisService {
         if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
             try {
                 String fastDFSPath = "";
-                synchronized(this){
-                    FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-                    fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
-                }
+                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     /*byte[] data = fastDFSClient.download(fastDFSPath);
                     if (data == null) {
@@ -161,41 +323,6 @@ public class BasisServiceImpl implements BasisService {
         }
     }
 
-    /**
-     * @description  获取token
-     * @return 返回结果
-     * @date 20/07/10 15:00
-     * @author wanghb
-     * @edit
-     * @param user
-     * @param request
-     */
-    @Override
-    public Object getToken(User user, HttpServletRequest request) {
-        String account = user.getAccount();
-        String password = user.getPassword();
-        if(ParamEnum.properties.dev.getCode().equals( active )){
-            String token = JwtUtil.sign(user.getAccount(),user.getPassword());
-            return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
-        }
-        if("".equals( account ) || "".equals( password )){
-            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码不能为空。","");
-        }
-        if (ScheduledTasks.accountData != null && ScheduledTasks.accountData.size() != 0) {
-            if(password.equals( PowerUtil.getString( ScheduledTasks.accountData.get( account) ) )){
-                String token = JwtUtil.sign(user.getAccount(),user.getPassword());
-                return new TokenResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),token);
-            }else {
-                return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户名或密码错误。","");
-            }
-        } else {
-            return new TokenResult(ParamEnum.resultCode.error.getCode(),"用户数据录入为空,请联系管理员。","");
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(JwtUtil.sign("admin","123456"));
-    }
 
     /**
      * @description  更新包流水信息
@@ -205,7 +332,7 @@ public class BasisServiceImpl implements BasisService {
      * @author  wanghb
      * @edit
      */
-    @Override
+
     @Transactional(rollbackOn = Exception.class)
     public UploadDataResult updateStatus(PackageSerialInfo packageSerialParam) {
         String serial = packageSerialParam.getSerial();
@@ -244,7 +371,7 @@ public class BasisServiceImpl implements BasisService {
      * @author  wanghb
      * @edit
      */
-    @Override
+
     public Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception {
         FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
         String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
@@ -272,7 +399,7 @@ public class BasisServiceImpl implements BasisService {
      * @author  wanghb
      * @edit
      */
-    @Override
+
     public UploadDataResult reUploadFtp(String serial) {
         Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
         if (!packageSerialInfoOptional.isPresent()) {
@@ -292,4 +419,5 @@ public class BasisServiceImpl implements BasisService {
             return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
         }
     }
+
 }

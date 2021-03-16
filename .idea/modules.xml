@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp.iml" filepath="$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp-寄递.iml" filepath="$PROJECT_DIR$/ftpsync/FastDfs同步到Ftp-寄递.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ftpsync-hostel/FastDfs同步到Ftp-旅馆.iml" filepath="$PROJECT_DIR$/ftpsync-hostel/FastDfs同步到Ftp-旅馆.iml" />
       <module fileurl="file://$PROJECT_DIR$/fastdfs-del/Fastdfs文件删除.iml" filepath="$PROJECT_DIR$/fastdfs-del/Fastdfs文件删除.iml" />
       <module fileurl="file://$PROJECT_DIR$/express/寄递上传.iml" filepath="$PROJECT_DIR$/express/寄递上传.iml" />
       <module fileurl="file://$PROJECT_DIR$/fastdfs-test/寄递上传测试.iml" filepath="$PROJECT_DIR$/fastdfs-test/寄递上传测试.iml" />

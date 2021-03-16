@@ -11,9 +11,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 * @since 2020-8-14 13:54:48
 */
 @Entity
-@Table(name = "package_serial", schema = "express")
+@Table(name = "package_serial_lg")
 @EntityListeners(AuditingEntityListener.class)
-public class PackageSerialInfo extends  PackageSerialInfoAbstract  implements Serializable {
+public class PackageSerialInfo extends  PackageSerialLgInfoAbstract  implements Serializable {
 	public  PackageSerialInfo(){
 		super();
 	}

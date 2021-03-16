@@ -3,7 +3,7 @@ import com.alibaba.fastjson.JSON;
 import com.server.express.dao.PackageSerialDao;
 import com.server.express.entity.PackageSerialInfo;
 import com.server.express.entity.UploadDataInfo;
-import com.server.express.service.BasisService;
+import com.server.express.service.impl.BasisService;
 import com.server.express.util.*;
 import lombok.SneakyThrows;
 import net.lingala.zip4j.exception.ZipException;
@@ -32,6 +32,7 @@ public class ScheduledTasks {
     Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
     public static Map<String, Object> accountData = new HashMap<>();
+    public static String publicKey = "";
 
 
     @Value("${spring.profiles.active}")
@@ -42,16 +43,18 @@ public class ScheduledTasks {
     @Resource
     private FTPUtil fTPUtil;
     @Resource
-    private com.server.express.service.BasisService basisService;
+    private BasisService basisService;
 
     @Value("${zip.encode}")
     private  String zipEncode;
 
+    @Value("${fdfsConfPath}")
+    private  String fdfsConfPath;
     @Value("${getUserDataUrl}")
     private String getUserDataUrl;
 
-    @Value("${fdfsConfPath}")
-    private  String fdfsConfPath;
+
+
     /**
      * @description  每5分钟执行的定时任务
      * @date  20/07/16 10:26
@@ -70,8 +73,22 @@ public class ScheduledTasks {
                 Map<String, Object> object = (Map<String, Object>)HttpUtil.get( getUserDataUrl, new HashMap<>() ).get( "data" );
                 accountData = object;
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
+    /**
+     * @description  每天23点执行
+     * @date  20/07/16 10:26
+     * @author  wanghb
+     * @edit
+     */
+    @Scheduled(cron = "0 0 23 * * ?")
+    public void syncPublicKey()  {
+        try {
+            basisService.syncPublicKey();
         } catch (IOException e) {
             e.printStackTrace();
         }

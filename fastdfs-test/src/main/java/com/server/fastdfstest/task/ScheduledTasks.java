@@ -83,7 +83,7 @@ public class ScheduledTasks {
      */
     @Scheduled(cron = "0 */1 * * * ?")
     public synchronized void delDfst(){
-        if (false) {
+        if (true) {
             return;
         }
         logger.info( "========================>开始执行删除数据" );

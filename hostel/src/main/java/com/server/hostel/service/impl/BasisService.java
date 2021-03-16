@@ -54,17 +54,13 @@ public class BasisService {
     @Value("${spring.profiles.active}")
     private String active;
 
-    @Value("${dataUploadUrl}")
-    private String dataUploadUrl;
-
-    @Value("${hostelStaffDataUploadUrl}")
-    private String hostelStaffDataUploadUrl;
-
     @Value("${zip.encode}")
     private  String zipEncode;
 
     @Value("${publicKeyUrl}")
     private String publicKeyUrl;
+    @Value("${dataUploadUrl}")
+    private String dataUploadUrl;
 
     @Value("${fdfsConfPath}")
     private  String fdfsConfPath;
@@ -120,21 +116,25 @@ public class BasisService {
      * @edit
      */
     public Object getPublicKey(Map<String, Object> params) {
-        String token = PowerUtil.getString( params.get("token") );
-        if(PowerUtil.isNull( token )){
-            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "token字段不能为空",".");
+        String token = PowerUtil.getString( params.get( "token" ) );
+        if (PowerUtil.isNull( token )) {
+            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "token字段不能为空", "." );
         }
-        if(!JwtUtil.verify( token ) ){
-            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "token过期或不存在","");
+        if (!JwtUtil.verify( token )) {
+            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "token过期或不存在", "" );
         }
         if (PowerUtil.isNull( ScheduledTasks.publicKey )) {
             try {
                 syncPublicKey();
             } catch (IOException e) {
-                return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(),  "获取公钥接口异常,请联系管理员。","");
+                return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "获取公钥接口异常,请联系管理员。", "" );
             }
         }
-        return new PublicKeyResult(ParamEnum.resultCode.success.getCode(),ParamEnum.resultCode.success.getName(),ScheduledTasks.publicKey);
+        if (PowerUtil.isNull( ScheduledTasks.publicKey )) {
+            return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "公钥获取失败,请联系管理员。", "" );
+        } else {
+            return new PublicKeyResult( ParamEnum.resultCode.success.getCode(), ParamEnum.resultCode.success.getName(), ScheduledTasks.publicKey );
+        }
     }
 
     /**
@@ -149,8 +149,9 @@ public class BasisService {
         if(ParamEnum.properties.dev.getCode().equals( active )){
             ScheduledTasks.publicKey = "04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A";
         }else {
-            Map<String, Object> object = (Map<String, Object>) HttpUtil.get( publicKeyUrl, new HashMap<>() ).get( "data" );
-            ScheduledTasks.publicKey = PowerUtil.getString( object.get("Data") );
+            Map<String, Object> temp = new HashMap<>();
+            Map<String, Object> object = (Map<String, Object>) HttpUtil.post( publicKeyUrl, temp ).get( "data" );
+            ScheduledTasks.publicKey = PowerUtil.getString( object.get("publicKey"));
         }
     }
 
@@ -191,6 +192,19 @@ public class BasisService {
         if(PowerUtil.isNull( publicKey )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"publicKey(公钥)字段不能为空.");
         }
+        if (PowerUtil.isNull( ScheduledTasks.publicKey )) {
+            try {
+                syncPublicKey();
+            } catch (IOException e) {
+                return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "获取公钥接口异常,请联系管理员。", "" );
+            }
+            if (PowerUtil.isNull( ScheduledTasks.publicKey )) {
+                return new PublicKeyResult( ParamEnum.resultCode.paramError.getCode(), "公钥获取失败,请联系管理员。", "" );
+            }
+        }
+        if (!ScheduledTasks.publicKey.equals( publicKey )) {
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"公钥过期,请重新获取.");
+        }
 
         PackageSerialLgInfo packageSerialLgInfo = new PackageSerialLgInfo();
         packageSerialLgInfo.setSerial(serial);
@@ -226,99 +240,13 @@ public class BasisService {
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。",ExceptionUtil.getOutputStream( e ));
             }
         }else  if(ParamEnum.properties.test.getCode().equals( active )){
-
-        }
-        if(isSuccess){
-            packageSerialLgDao.save( packageSerialLgInfo );
-            return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
-        }else {
-            return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
-        }
-    }
-
-    /**
-     * @description  上传数据
-     * @return 返回结果
-     * @date 20/07/10 15:00
-     * @author wanghb
-     * @edit
-     * @param uploadDataInfo
-     * @param uploadUrl
-     */
-
-    @Transactional(rollbackOn = Exception.class)
-    public Object dataUpload(UploadDataInfo uploadDataInfo, String uploadUrl) throws IOException, ZipException {
-
-        String serial = uploadDataInfo.getSerial();
-        String encryptData = uploadDataInfo.getEncryptData();
-        String accountNo = uploadDataInfo.getAccountNo();
-        String signature = uploadDataInfo.getSignature();
-        String token = uploadDataInfo.getToken();
-
-        if(PowerUtil.isNull( token )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
-        }
-        if(!JwtUtil.verify( token ) ){
-            return new UploadDataResult( ParamEnum.resultCode.tokenExpired.getCode(),  ParamEnum.resultCode.tokenExpired.getName(),"");
-        }
-        if(PowerUtil.isNull( serial )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
-        }
-        int count = packageSerialDao.countBySerial(serial);
-        if (count > 0){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号) 已存在。" ).toString() );
-        }
-        if(PowerUtil.isNull( encryptData )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"encryptData(主数据)字段不能为空.");
-        }
-        if(PowerUtil.isNull( accountNo )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"accountNo(快递方账号)字段不能为空.");
-        }
-        if(PowerUtil.isNull( signature )){
-            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"signature(报文签名)字段不能为空.");
-        }
-
-        PackageSerialInfo packageSerialInfo = new PackageSerialInfo();
-        packageSerialInfo.setSerial(serial);
-        packageSerialInfo.setUploadTime(new Date() );
-        packageSerialInfo.setResult(ParamEnum.resultStatus.status0.getCode());
-        packageSerialInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
-        packageSerialInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
-        packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
-        packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
-        packageSerialInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( uploadUrl ).toString() );
-        Boolean isSuccess = null;
-        if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
-            try {
-                String fastDFSPath = "";
-                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-                fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
-                if (PowerUtil.isNotNull( fastDFSPath )) {
-                    /*byte[] data = fastDFSClient.download(fastDFSPath);
-                    if (data == null) {
-                        return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
-                    }
-                    packageSerialInfo.setFileSize( data.length );*/
-                    packageSerialInfo.setResult(ParamEnum.resultStatus.status1.getCode());
-                    packageSerialInfo.setFastdfsId(fastDFSPath);
-                    isSuccess = true;
-                }else{
-                    isSuccess = false;
-                }
-            } catch (Exception e) {
-                packageSerialInfo.setResult(ParamEnum.resultStatus.status2.getCode());
-                logger.error( ExceptionUtil.getOutputStream( e ) );
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传异常。",ExceptionUtil.getOutputStream( e ));
-            }
-        }else  if(ParamEnum.properties.test.getCode().equals( active )){
             //这个是直接请求接口的数据传输
-            String url = "";
-            if(ParamEnum.uploadUrl.dataUpload.getCode().equals( uploadUrl )){
-                url = dataUploadUrl;
-            }else if(ParamEnum.uploadUrl.hostelStaffDataUpload.getCode().equals( uploadUrl )){
-                url = hostelStaffDataUploadUrl;
+            Map<String, Object> object = null;
+            try {
+                object = HttpUtil.post( dataUploadUrl, uploadDataSm2Info );
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            Map<String, Object> object = HttpUtil.post( url, uploadDataInfo );
             if(PowerUtil.isNull( object )){
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "调用接口返回为空。",PowerUtil.getString( object ));
             }else{
@@ -330,13 +258,12 @@ public class BasisService {
             }
         }
         if(isSuccess){
-            packageSerialDao.save( packageSerialInfo );
+            packageSerialLgDao.save( packageSerialLgInfo );
             return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName(),"");
         }else {
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "上传失败","");
         }
     }
-
 
     /**
      * @description  更新包流水信息

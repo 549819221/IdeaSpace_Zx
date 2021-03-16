@@ -1,6 +1,6 @@
-package com.server.ftpsync.dao;
+package com.server.express.dao;
 
-import com.server.ftpsync.entity.PackageSerialInfo;
+import com.server.express.entity.PackageSerialLgInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,18 +20,16 @@ import java.util.List;
 * @since 2020-8-14 13:54:48
 */
 @Repository
-public interface PackageSerialDao extends JpaRepository<PackageSerialInfo, String>, JpaSpecificationExecutor<PackageSerialInfo> {
+public interface PackageSerialLgDao extends JpaRepository<PackageSerialLgInfo, String>, JpaSpecificationExecutor<PackageSerialLgInfo> {
     @Override
-    Page<PackageSerialInfo> findAll(Specification<PackageSerialInfo> specification, Pageable pageable);
+    Page<PackageSerialLgInfo> findAll(Specification<PackageSerialLgInfo> specification, Pageable pageable);
 
     @Transactional
     @Modifying
-    @Query("delete  from PackageSerialInfo a where  a.serial in (:ids) ")
+    @Query("delete  from PackageSerialLgInfo a where  a.serial in (:ids) ")
     void batchDelete(List<String> ids);
 
     int countBySerial(String serial);
 
-    List<PackageSerialInfo> getBySyncFtpStatus(String code);
-
-    int countByFtpPathAndSyncFtpStatus(String code, String code1);
+    List<PackageSerialLgInfo> getBySyncFtpStatus(String code);
 }

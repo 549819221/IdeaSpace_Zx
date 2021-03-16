@@ -56,65 +56,136 @@ public class ScheduledTasks {
      * @author  wanghb
      * @edit
      */
-    //@Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0/1 * * * * ?")
     public synchronized void syncFtp() throws Exception {
-        logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
-        Boolean isWhile = true;
+        logger.info( "开始同步寄递数据FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         Date startDate = new Date();
-        while (isWhile){
-            isWhile = processWhile();
+        Integer count = packageSerialDao.countByFtpPathAndSyncFtpStatus(ParamEnum.uploadFapPath.dataUpload.getCode(),ParamEnum.syncFtpStatus.status0.getCode());
+        if(count == 0){
+            return;
         }
-        System.out.println("=================>共耗时"+((System.currentTimeMillis() - startDate.getTime()) / 1000)+"秒");
+        Thread t0 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),0);  } );
+        Thread t1 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),1 * Integer.parseInt( ftpFileSize ));  } );
+        Thread t2 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),2 * Integer.parseInt( ftpFileSize )); } );
+        Thread t3 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),3 * Integer.parseInt( ftpFileSize )); } );
+        Thread t4 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),4 * Integer.parseInt( ftpFileSize )); } );
+        /*
+        Thread t5 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),5 * Integer.parseInt( ftpFileSize )); } );
+        Thread t6 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),6 * Integer.parseInt( ftpFileSize )); } );
+        Thread t7 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),7 * Integer.parseInt( ftpFileSize )); } );
+        Thread t8 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),8 * Integer.parseInt( ftpFileSize )); } );
+        Thread t9 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.dataUpload.getCode(),9 * Integer.parseInt( ftpFileSize )); } );
+        */
+        t0.start();
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+        /*t5.start();
+        t6.start();
+        t7.start();
+        t8.start();
+        t9.start();*/
+        t0.join();
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+        /*t5.join();
+        t6.join();
+        t7.join();
+        t8.join();
+        t9.join();*/
+        System.out.println("=================>寄递数据同步FTP共耗时"+((System.currentTimeMillis() - startDate.getTime()) / 1000)+"秒");
     }
 
+    /**
+     * @description  每10分钟执行的定时任务
+     * @date  20/07/16 10:26
+     * @author  wanghb
+     * @edit
+     */
+    @Scheduled(cron = "0/1 * * * * ?")
+    public synchronized void syncStaffFtp() throws Exception {
+        logger.info( "开始同步寄递数据FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
+        Date startDate = new Date();
+        Integer count = packageSerialDao.countByFtpPathAndSyncFtpStatus(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),ParamEnum.syncFtpStatus.status0.getCode());
+        if(count == 0){
+            return;
+        }
+        Thread t0 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),0);  } );
+        Thread t1 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),1 * Integer.parseInt( ftpFileSize ));  } );
+        Thread t2 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),2 * Integer.parseInt( ftpFileSize )); } );
+        Thread t3 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),3 * Integer.parseInt( ftpFileSize )); } );
+        Thread t4 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),4 * Integer.parseInt( ftpFileSize )); } );
+        /*
+        Thread t5 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),5 * Integer.parseInt( ftpFileSize )); } );
+        Thread t6 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),6 * Integer.parseInt( ftpFileSize )); } );
+        Thread t7 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),7 * Integer.parseInt( ftpFileSize )); } );
+        Thread t8 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),8 * Integer.parseInt( ftpFileSize )); } );
+        Thread t9 = new Thread( () -> {processWhile(ParamEnum.uploadFapPath.expressStaffDataUpload.getCode(),9 * Integer.parseInt( ftpFileSize )); } );
+        */
+        t0.start();
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+        /*t5.start();
+        t6.start();
+        t7.start();
+        t8.start();
+        t9.start();*/
+        t0.join();
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+        /*t5.join();
+        t6.join();
+        t7.join();
+        t8.join();
+        t9.join();*/
+        System.out.println("=================>快递员数据同步FTP共耗时"+((System.currentTimeMillis() - startDate.getTime()) / 1000)+"秒");
+    }
 
-    private Boolean processWhile()  {
-        String[] paths = ftpPaths.split( "," );
-        int count = 0;
-        for (String path : paths) {
-            String sql = "select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '"+ParamEnum.syncFtpStatus.status0.getCode()+"' ";
-            if(PowerUtil.isNotNull( startUploadTime )){
-                sql += " and upload_time >= '"+startUploadTime+"'";
-            }
-            if(PowerUtil.isNotNull( endUploadTime )){
-                sql += " and upload_time <= '"+endUploadTime+"'";
-            }
-            sql += " limit 0 , "+ftpFileSize;
-            logger.info( "此次之行的SQL=====>"+sql );
-            List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query(sql,new BeanPropertyRowMapper(PackageSerialInfo.class));
-            //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
-            logger.info( "往ftp这个地址====>"+path+",同步压缩包,查询的总条数==>" + packageSerialInfos.size() );
-            if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
-                count ++;
-                continue;
-            }
-            try {
-            Boolean isSuccess = basisService.uploadFtp(packageSerialInfos,path);
-            } catch (Exception e) {
-                logger.error( "往ftp这个地址====>"+path+",同步压缩包异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
-            }
-            Integer successCount = 0;
-            Integer failCount = 0;
-            try {
-                for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
-                    if(ParamEnum.syncFtpStatus.status2.getCode().equals( packageSerialInfo.getSyncFtpStatus(  ) )){
-                        failCount++;
-                    }else{
-                        successCount++;
-                    }
-                }
-                namedParameterJdbcTemplate.batchUpdate("update package_serial set sync_ftp_status = :syncFtpStatus where serial = :serial",JdbcTemplateUtil.ListBeanPropSource( packageSerialInfos ) );
-            } catch (Exception e) {
-                logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
-                logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
-            }
-            logger.info( "往ftp这个地址====>"+path+",同步压缩包,成功同步数据条数==>" + successCount + "失败条数==>"+failCount );
+    private Boolean processWhile(String path,Integer startIndex)  {
+        String sql = "select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '"+ParamEnum.syncFtpStatus.status0.getCode()+"' ";
+        if(PowerUtil.isNotNull( startUploadTime )){
+            sql += " and upload_time >= '"+startUploadTime+"'";
         }
-        if (count == paths.length) {
+        if(PowerUtil.isNotNull( endUploadTime )){
+            sql += " and upload_time <= '"+endUploadTime+"'";
+        }
+        sql += " limit "+startIndex+", "+ftpFileSize;
+        logger.info( "此次之行的SQL=====>"+sql );
+        List<PackageSerialInfo> packageSerialInfos = jdbcTemplate.query(sql,new BeanPropertyRowMapper(PackageSerialInfo.class));
+        //List<PackageSerialInfo> packageSerialInfos = packageSerialDao.getBySyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
+        logger.info( "往ftp这个地址====>"+path+",同步压缩包,查询的总条数==>" + packageSerialInfos.size() );
+        if (packageSerialInfos == null || packageSerialInfos.size() == 0) {
             return false;
-        }else {
-            return true;
         }
+        try {
+            Boolean isSuccess = basisService.uploadFtp(packageSerialInfos,path);
+        } catch (Exception e) {
+            logger.error( "往ftp这个地址====>"+path+",同步压缩包异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+        }
+        Integer successCount = 0;
+        Integer failCount = 0;
+        try {
+            for (PackageSerialInfo packageSerialInfo : packageSerialInfos) {
+                if(ParamEnum.syncFtpStatus.status2.getCode().equals( packageSerialInfo.getSyncFtpStatus(  ) )){
+                    failCount++;
+                }else{
+                    successCount++;
+                }
+            }
+            namedParameterJdbcTemplate.batchUpdate("update package_serial set sync_ftp_status = :syncFtpStatus where serial = :serial",JdbcTemplateUtil.ListBeanPropSource( packageSerialInfos ) );
+        } catch (Exception e) {
+            logger.error( "往ftp这个地址====>"+path+",更新异常,异常信息:"+ ExceptionUtil.getOutputStream( e ) );
+            logger.error( "异常数据:====>"+ JSON.toJSONString( packageSerialInfos ) );
+        }
+        logger.info( "往ftp这个地址====>"+path+",同步压缩包,成功同步数据条数==>" + successCount + "失败条数==>"+failCount );
+        return true;
     }
 
 

@@ -69,6 +69,35 @@ public interface ParamEnum {
      * 配置环境
      * @author wanghb
      */
+    enum uploadFapPath {
+        dataUpload( "/expressData/dataUpload","上传快递FTP地址"),
+        expressStaffDataUpload( "/expressData/expressStaffDataUpload","上传快递员FTP地址"),
+        ;
+        private String code;
+        private String name;
+        public String getCode() {
+            return code;
+        }
+        public String getName() {
+            return name;
+        }
+        uploadFapPath(String code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+        public static String getNameByCode(String code) {
+            for (uploadFapPath item : uploadFapPath.values()) {
+                if (item.getCode().equals(code)) {
+                    return item.getName();
+                }
+            }
+            return "";
+        }
+    }
+    /**
+     * 配置环境
+     * @author wanghb
+     */
     enum resultCode {
         success( "0","成功"),
         error( "-1","失败"),

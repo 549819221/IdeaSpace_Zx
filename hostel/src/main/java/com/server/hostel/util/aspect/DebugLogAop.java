@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 public class DebugLogAop {
-    private final static com.server.hostel.util.aspect.DebugLogConfig config = new com.server.hostel.util.aspect.DebugLogConfig(true,true,false,true,false,"entity");
+    private final static DebugLogConfig config = new DebugLogConfig(true,true,false,true,false,"entity");
     @Value("${spring.profiles.active}")
     private String active;
     /**

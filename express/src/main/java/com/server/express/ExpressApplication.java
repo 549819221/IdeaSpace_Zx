@@ -14,10 +14,9 @@ import java.util.Properties;
 @EnableSwagger2
 public class ExpressApplication {
     public static void main(String[] args) {
-
         SpringApplication.run( ExpressApplication.class, args );
         SpringContextUtil.getBean( ScheduledTasks.class ).syncAccountData();
-
+        //SpringContextUtil.getBean( ScheduledTasks.class ).syncPublicKey();
     }
 
 }

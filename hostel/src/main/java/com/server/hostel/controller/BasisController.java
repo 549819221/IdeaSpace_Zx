@@ -52,75 +52,6 @@ public class BasisController  {
     }
 
 
-    /**
-     * @description  上传快递数据
-     * @return  实体对象
-     * @date  2020-07-10 14:43:44
-     * @author  wanghb
-     * @edit
-     */
-    @PostMapping("/dataUpload")
-    @ResponseBody
-    @ApiOperation(value = "上传快递数据", notes = "上传快递数据")
-    public Object dataUpload(@RequestBody UploadDataInfo uploadDataInfo) {
-        logger.info( new StringBuilder( "上传快递数据流水号=====================>" ).append( uploadDataInfo.getSerial() ).toString() );
-        Date startDate = new Date();
-        //System.out.println( "=================>快递数据上传开始:"+ DateUtil.toString( startDate,DateUtil.DATE_LONG ) );
-        Object obj = null;
-        try {
-            obj = basisService.dataUpload(uploadDataInfo,ParamEnum.uploadUrl.dataUpload.getCode());
-        }catch (Exception e) {
-            Date endDate = new Date();
-            //System.out.println( "=================>快递数据上传结束:"+ DateUtil.toString(endDate,DateUtil.DATE_LONG ) );
-            System.out.println("=================>共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
-            if(e.getMessage().indexOf( "PRIMARY" ) > -1){
-                return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "该 " ).append( uploadDataInfo.getSerial() ).append( " serial(流水号) 已存在。" ).toString() );
-            }else{
-                logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-            }
-        }
-        Date endDate = new Date();
-        //System.out.println( "=================>快递数据上传结束:"+ DateUtil.toString( endDate,DateUtil.DATE_LONG ) );
-        System.out.println("=================>本次共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
-        return obj;
-    }
-
-
-    /**
-     * @description  上传数据
-     * @return  实体对象
-     * @date  2020-07-10 14:43:44
-     * @author  wanghb
-     * @edit
-     */
-    @PostMapping("/hostelStaffDataUpload")
-    @ResponseBody
-    @ApiOperation(value = "上传快递公司数据", notes = "上传快递公司数据")
-    public Object hostelStaffUpload(@RequestBody UploadDataInfo hostelStaff) {
-        logger.info( new StringBuilder( "上传快递公司数据流水号=====================>" ).append( hostelStaff.getSerial() ).toString() );
-        Date startDate = new Date();
-        //System.out.println( "=================>快递网点数据上传开始:"+ DateUtil.toString( startDate,DateUtil.DATE_LONG ) );
-        Object obj = null;
-        try {
-            obj = basisService.dataUpload(hostelStaff,ParamEnum.uploadUrl.hostelStaffDataUpload.getCode());
-        }catch (Exception e) {
-            Date endDate = new Date();
-            //System.out.println( "=================>快递网点数据上传结束:"+ DateUtil.toString( endDate,DateUtil.DATE_LONG ) );
-            System.out.println("=================>共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
-            if(e.getMessage().indexOf( "PRIMARY" ) > -1){
-                return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "该 " ).append( hostelStaff.getSerial() ).append( " serial(流水号) 已存在。" ).toString() );
-            }else{
-                logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
-            }
-        }
-        Date endDate = new Date();
-        //System.out.println( "=================>快递网点数据上传结束:"+ DateUtil.toString(endDate,DateUtil.DATE_LONG ) );
-        System.out.println("=================>本次共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
-        return obj;
-    }
-
 
     /**
      * @description  获取
@@ -132,9 +63,9 @@ public class BasisController  {
     @PostMapping("/getPublicKey")
     @ResponseBody
     @ApiOperation(value = "获取公钥方法", notes = "获取公钥方法")
-    public UploadDataResult getPublicKey(@RequestBody Map<String, Object> params){
-        Object r = basisService.getPublicKey(params);
-        return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(), "" );
+    public Object getPublicKey(@RequestBody Map<String, Object> params){
+        Object returnObj = basisService.getPublicKey(params);
+        return returnObj;
     }
 
 

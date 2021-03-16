@@ -11,6 +11,7 @@ public class UploadDataInfo {
     private String signature;
     //令牌
     private String token;
+
     private String ext;
 
     public String getEncryptData() {

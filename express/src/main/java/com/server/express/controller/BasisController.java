@@ -1,7 +1,7 @@
 package com.server.express.controller;
 
 import com.server.express.entity.*;
-import com.server.express.service.BasisService;
+import com.server.express.service.impl.BasisService;
 import com.server.express.util.DateUtil;
 import com.server.express.util.ExceptionUtil;
 import com.server.express.util.ParamEnum;
@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * (Basis)表控制层
@@ -30,6 +31,8 @@ public class BasisController  {
     private static Logger logger = Logger.getLogger( BasisController.class );
     @Resource
     private BasisService basisService;
+
+
     /**
      * @description  令牌获取
      * @return  实体对象
@@ -43,6 +46,7 @@ public class BasisController  {
     public Object getToken(@RequestBody User user, HttpServletRequest request) {
         return basisService.getToken(user,request);
     }
+
 
     /**
      * @description  上传快递数据
@@ -71,7 +75,6 @@ public class BasisController  {
                 logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
             }
-
         }
         Date endDate = new Date();
         //System.out.println( "=================>快递数据上传结束:"+ DateUtil.toString( endDate,DateUtil.DATE_LONG ) );
@@ -113,6 +116,56 @@ public class BasisController  {
         System.out.println("=================>本次共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
         return obj;
     }
+
+
+    /**
+     * @description  获取
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    /*@PostMapping("/getPublicKey")
+    @ResponseBody
+    @ApiOperation(value = "获取公钥方法", notes = "获取公钥方法")
+    public UploadDataResult getPublicKey(@RequestBody Map<String, Object> params){
+        Object r = basisService.getPublicKey(params);
+        return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(), "" );
+    }*/
+
+
+    /**
+     * @description  华住集团数据上传
+     * @return  实体对象
+     * @date  2020-07-10 14:43:44
+     * @author  wanghb
+     * @edit
+     */
+    /*@PostMapping("/dataUploadSm2")
+    @ResponseBody
+    @ApiOperation(value = "数据上传Sm2加密", notes = "数据上传Sm2加密")
+    public Object dataUploadSm2(@RequestBody UploadDataSm2Info uploadDataSm2Info) {
+        logger.info( new StringBuilder( "上传快递公司数据流水号=====================>" ).append( uploadDataSm2Info.getSerial() ).toString() );
+        Date startDate = new Date();
+        Object obj = null;
+        try {
+            obj = basisService.dataUploadSm2(uploadDataSm2Info);
+        }catch (Exception e) {
+            Date endDate = new Date();
+            System.out.println("=================>共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
+            if(e.getMessage().indexOf( "PRIMARY" ) > -1){
+                return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "该 " ).append( uploadDataSm2Info.getSerial() ).append( " serial(流水号) 已存在。" ).toString() );
+            }else{
+                logger.error( new StringBuilder( "程序异常,异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+                return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "程序异常", new StringBuilder("异常信息:" ).append( ExceptionUtil.getOutputStream( e ) ).toString() );
+            }
+        }
+        Date endDate = new Date();
+        //System.out.println( "=================>快递网点数据上传结束:"+ DateUtil.toString(endDate,DateUtil.DATE_LONG ) );
+        System.out.println("=================>本次共耗时"+(endDate.getTime() - startDate.getTime())+"毫秒");
+        return obj;
+    }*/
+
 
     /**
      * @description  更新状态

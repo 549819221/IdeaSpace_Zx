@@ -42,7 +42,7 @@ public interface ParamEnum {
      */
     enum uploadUrl {
         dataUpload( "dataUpload","上传快递接口"),
-        lgDataUpload( "lgDataUpload","旅馆数据上传接口"),
+        lgDataUpload( "dataUpload","旅馆数据上传接口"),
         hostelStaffDataUpload( "hostelStaffDataUpload","上传快递员网点接口"),
         ;
         private String code;

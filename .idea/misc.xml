@@ -15,12 +15,13 @@
         <option value="$PROJECT_DIR$/monitor/pom.xml" />
         <option value="$PROJECT_DIR$/demo/pom.xml" />
         <option value="$PROJECT_DIR$/ticket/pom.xml" />
-        <option value="$PROJECT_DIR$/ftpsync/pom.xml" />
         <option value="$PROJECT_DIR$/filesizesync/pom.xml" />
         <option value="$PROJECT_DIR$/fastdfs-del/pom.xml" />
         <option value="$PROJECT_DIR$/fastdfs-test/pom.xml" />
         <option value="$PROJECT_DIR$/express/pom.xml" />
         <option value="$PROJECT_DIR$/hostel/pom.xml" />
+        <option value="$PROJECT_DIR$/ftpsync-hostel/pom.xml" />
+        <option value="$PROJECT_DIR$/ftpsync/pom.xml" />
       </list>
     </option>
   </component>

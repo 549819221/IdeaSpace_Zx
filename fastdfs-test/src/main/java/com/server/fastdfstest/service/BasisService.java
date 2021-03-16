@@ -250,14 +250,12 @@ public class BasisService {
         packageSerialInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
         packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
         packageSerialInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
-        packageSerialInfo.setFtpPath( "");
+        packageSerialInfo.setFtpPath( "/expressData/dataUpload");
         Boolean isSuccess = null;
         try {
             String fastDFSPath = "";
-            synchronized(this){
-                FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-                fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
-            }
+            FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+            fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataInfo).getBytes());
             if (PowerUtil.isNotNull( fastDFSPath )) {
                     /*byte[] data = fastDFSClient.download(fastDFSPath);
                     if (data == null) {
@@ -301,7 +299,7 @@ public class BasisService {
             packageSerialInfo.setFastdfsId(path);
             list.add( packageSerialInfo );
         }
-        String sql = "INSERT INTO package_serial_bak(serial, upload_time, result, event, ftp_path, ftp_status, fastdfs_id, fastdfs_status, sync_ftp_status, file_size) VALUES (:serial, :uploadTime,:result,event,:ftpPath,:ftpStatus,:fastdfsId,:fastdfsStatus,:syncFtpStatus,:fileSize)";
+        String sql = "INSERT INTO package_serial(serial, upload_time, result, event, ftp_path, ftp_status, fastdfs_id, fastdfs_status, sync_ftp_status, file_size) VALUES (:serial, :uploadTime,:result,event,:ftpPath,:ftpStatus,:fastdfsId,:fastdfsStatus,:syncFtpStatus,:fileSize)";
         int[] ints = namedParameterJdbcTemplate.batchUpdate( sql, JdbcTemplateUtil.ListBeanPropSource( list ) );
         System.out.println("成功插入==============>"+ints.length);
         System.out.println("清除数据==============>"+paths.size());

@@ -89,6 +89,7 @@ public class ScheduledTasks {
     public void syncPublicKey()  {
         try {
             basisService.syncPublicKey();
+            System.out.println();
         } catch (IOException e) {
             e.printStackTrace();
         }

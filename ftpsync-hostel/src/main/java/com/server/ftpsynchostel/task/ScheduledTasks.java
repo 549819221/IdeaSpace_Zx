@@ -30,7 +30,6 @@ public class ScheduledTasks {
 
     @Autowired
     private PackageSerialDao packageSerialDao;
-
     @Resource
     private FTPUtil fTPUtil;
     @Resource
@@ -53,7 +52,7 @@ public class ScheduledTasks {
      * @edit
      */
     @Scheduled(cron = "0 */1 * * * ?")
-    public synchronized void syncFtp() throws Exception {
+    public synchronized void syncFtp() {
         logger.info( "开始同步FTP==>" + DateUtil.toString( new Date() ,DateUtil.DATE_LONG) );
         Boolean isWhile = true;
         while (isWhile){
@@ -66,7 +65,7 @@ public class ScheduledTasks {
         String[] paths = ftpPaths.split( "," );
         int count = 0;
         for (String path : paths) {
-            String sql = "select * from package_serial where ftp_path = '"+path+"' and sync_ftp_status = '"+ ParamEnum.syncFtpStatus.status0.getCode()+"' ";
+            String sql = "select * from package_serial_lg where ftp_path = '"+path+"' and sync_ftp_status = '"+ ParamEnum.syncFtpStatus.status0.getCode()+"' ";
             if(PowerUtil.isNotNull( startUploadTime )){
                 sql += " and upload_time >= '"+startUploadTime+"'";
             }

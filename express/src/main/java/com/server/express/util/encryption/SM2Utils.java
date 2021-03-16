@@ -1,4 +1,4 @@
-package com.server.hostel.util.encryption;
+package com.server.express.util.encryption;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -97,33 +97,16 @@ public class SM2Utils {
         //生成密钥对
         generateKeyPair();
 
+
+
+
         //下面的秘钥可以使用generateKeyPair()生成的秘钥内容
         // 国密规范正式私钥
         String prik = "484539D91225C1AAA3857CDF1D41AA171216A9A0E24F7D7D165FB01FDA688D32";
 
-
-        String plainText = "{ " +
-                "    \"OBJID\": \"6BA7D533D5754E42B2DE2C7ECA4AEF02\", " +
-                "    \"DDBM\": \"000000000000001\", " +
-                "    \"GXSJ\": \"2021-01-25 01:12\", " +
-                "    \"NLKRQ\": \"2021-01-26 01:12\", " +
-                "    \"QXSJ\": \"\", " +
-                "    \"QXYY\": \"\", " +
-                "    \"WYFBM\": \"BH-200000001\", " +
-                "    \"WYFPTDWBM\": \"网约房平台单位编码\", " +
-                "    \"XDSJ\": \"下单时间\", " +
-                "    \"YDR_CYZJDM\": \"预订人证件种类\", " +
-                "    \"YDR_GJDM\": \"预订人国籍\", " +
-                "    \"YDR_LXDH\": \"预订人联系电话\", " +
-                "    \"YDR_NC\": \"预订人昵称\", " +
-                "    \"YDR_WWM\": \"预订人外文名\", " +
-                "    \"YDR_WWX\": \"预订人外文姓\", " +
-                "    \"YDR_XM\": \"预订人姓名\", " +
-                "    \"YDR_ZJHM\": \"预订人证件号码\", " +
-                "    \"YDRZRQ\": \"预订入住日期\" " +
-                "}";
+        String plainText = "待加密的JSON字符串";
         // 公钥
-        String publicKey = "04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A";
+        String publicKey = "0418DE2C195BBE4730E6252A76742F984F836EF70F91883AF43FD6594236724B2153D24D928870ED97C8337956BDC76AC54F2EE5560117B1BA09E1A1DB4E1B3FB4";
         // 进行加密
         String cipherText = SM2Utils.encrypt(Util.hexToByte(publicKey), plainText);
         System.out.println("加密后的数据:"+cipherText);

@@ -83,6 +83,7 @@ public class BasisServiceImpl implements BasisService {
      * @author  wanghb
      * @edit
      */
+    private static Object ftpLock = new Object();
     @Override
     public Boolean uploadFtp(List<PackageSerialInfo> packageSerialInfos,String ftpUploadPath) throws Exception {
         logger.info( "=================>进入上传方法");
@@ -91,7 +92,11 @@ public class BasisServiceImpl implements BasisService {
             String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
             byte[] data = null;
             FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-            data = fastDFSClient.download(fastdfsId);
+            try {
+                data = fastDFSClient.download(fastdfsId);
+            } catch (Exception e) {
+                continue;
+            }
             if (data == null) {
                 packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status2.getCode() );
                 logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
@@ -107,7 +112,10 @@ public class BasisServiceImpl implements BasisService {
         //String ftpUploadPath = "/expressData/expressStaffDataUpload";
         //文件上传
         logger.info( "=================>数据完毕开始上传");
-        Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        Boolean isSuccess = null;
+        synchronized (ftpLock) {
+            isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
+        }
         logger.info( "=================>ftp上传成功");
         tempZip.delete();
         return isSuccess;

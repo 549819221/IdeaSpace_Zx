@@ -9,16 +9,18 @@
         <module name="监控项目" />
         <module name="文件大小统计" />
         <module name="寄递上传测试" />
-        <module name="FastDfs同步到Ftp" />
         <module name="Fastdfs文件删除" />
+        <module name="FastDfs同步到Ftp-旅馆" />
         <module name="寄递上传" />
         <module name="旅馆上传" />
+        <module name="FastDfs同步到Ftp-寄递" />
         <module name="票务上传" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="demo" target="1.8" />
-      <module name="FastDfs同步到Ftp" target="1.8" />
+      <module name="FastDfs同步到Ftp-寄递" target="1.8" />
+      <module name="FastDfs同步到Ftp-旅馆" target="1.8" />
       <module name="Fastdfs文件删除" target="1.8" />
       <module name="寄递上传" target="1.8" />
       <module name="寄递上传测试" target="1.8" />
@@ -30,7 +32,8 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="FastDfs同步到Ftp" options="-parameters" />
+      <module name="FastDfs同步到Ftp-寄递" options="-parameters" />
+      <module name="FastDfs同步到Ftp-旅馆" options="-parameters" />
       <module name="Fastdfs文件删除" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="寄递上传" options="-parameters" />
