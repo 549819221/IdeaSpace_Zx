@@ -1,7 +1,7 @@
 package com.server.ftpsynchostel.util;
 
 import com.alibaba.fastjson.JSON;
-import com.server.ftpsynchostel.entity.UploadDataInfo;
+import com.server.ftpsynchostel.UploadDataSm2Info;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -76,11 +76,11 @@ public class FTPUtil {
     public boolean uploadFile(String path,File file) throws IOException{
         FileInputStream fileInputStream = null;
         try {
-            logger.info( "=================>登陆ftp");
+            //logger.info( "=================>登陆ftp");
             if(!login()){
                 return false;
             }
-            logger.info( "=================>登陆成功");
+            //logger.info( "=================>登陆成功");
             //设置上传文件的类型为二进制类型
             ftp.setFileType( FTP.BINARY_FILE_TYPE);
             String[] paths = path.split("/");
@@ -93,14 +93,14 @@ public class FTPUtil {
             fileName = fileName.substring(0, fileName.indexOf("_")) + fileName.substring(fileName.indexOf("."));
             fileInputStream = new FileInputStream( file );
             if(fileName == null){
-                System.out.println("======>压缩文件名为空");
+                //System.out.println("======>压缩文件名为空");
             }
             if(fileInputStream == null){
-                System.out.println("======>压缩文件fileInputStream为空");
+                //System.out.println("======>压缩文件fileInputStream为空");
             }
-            logger.info( "=================>准备就绪");
+            //logger.info( "=================>准备就绪");
             Boolean isSuccess = ftp.storeFile(fileName, fileInputStream);
-            logger.info( "=================>完成");
+            //logger.info( "=================>完成");
             return isSuccess;
         } finally {
             if (fileInputStream != null) {
@@ -161,10 +161,10 @@ public class FTPUtil {
      * @author  wanghb
      * @edit
      */
-    public List<UploadDataInfo> getDateList(String fpath) throws IOException, ZipException {
-        List<UploadDataInfo> uploadDataInfos = new ArrayList<>();
+    public List<UploadDataSm2Info> getDateList(String fpath) throws IOException, ZipException {
+        List<UploadDataSm2Info> UploadDataSm2Infos = new ArrayList<>();
         if(!login()){
-            return uploadDataInfos;
+            return UploadDataSm2Infos;
         }
         try {
             if(fpath.startsWith("/") && fpath.endsWith("/")){
@@ -185,7 +185,7 @@ public class FTPUtil {
                         ftp.retrieveFile(fileName, bufferRead);
                         bufferRead.flush();
                         String packageSerialJson = FileEncryptUtil.getPackageSerialInfo( localFile,zipEncode );
-                        uploadDataInfos.add( JSON.parseObject(packageSerialJson, UploadDataInfo.class) );
+                        UploadDataSm2Infos.add( JSON.parseObject(packageSerialJson, UploadDataSm2Info.class) );
                         if (bufferRead != null) {
                             bufferRead.close();
                         }
@@ -197,7 +197,7 @@ public class FTPUtil {
                 }
                 ftp.logout();
             }
-            return uploadDataInfos;
+            return UploadDataSm2Infos;
         }finally{
             closeClient();
         }
@@ -255,12 +255,11 @@ public class FTPUtil {
         //文件删除
         //fTPUtil.deleteFile( "/data", "ftp7500632415927387638.zip" );
         //文件解析
-        //List<UploadDataInfo> dateList = fTPUtil.getDateList( "/test/" );
+        //List<UploadDataSm2Info> dateList = fTPUtil.getDateList( "/test/" );
         //文件下载
         //fTPUtil.downloadFileList("/test/","C:\\Users\\Administrator\\Desktop\\");
         String month = "sdfsdfsdf_123123123123.zip";
         String beginMonth = month.substring(0, month.indexOf("_")) + month.substring(month.indexOf("."));//截取从字符‘-’位置开始的字符串
         System.out.println(beginMonth);
     }
-
 }

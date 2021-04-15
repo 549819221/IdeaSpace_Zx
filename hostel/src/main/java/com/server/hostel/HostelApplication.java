@@ -13,6 +13,7 @@ public class HostelApplication {
     public static void main(String[] args) {
         SpringApplication.run( HostelApplication.class, args );
         SpringContextUtil.getBean( ScheduledTasks.class ).syncAccountData();
+        System.out.println("=================================>启动成功<=================================");
         //SpringContextUtil.getBean( ScheduledTasks.class ).syncPublicKey();
     }
 

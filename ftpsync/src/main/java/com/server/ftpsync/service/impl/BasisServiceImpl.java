@@ -7,9 +7,11 @@ import com.server.ftpsync.entity.TokenResult;
 import com.server.ftpsync.entity.UploadDataInfo;
 import com.server.ftpsync.entity.UploadDataResult;
 import com.server.ftpsync.service.BasisService;
+import com.server.ftpsync.task.ScheduledTasks;
 import com.server.ftpsync.util.*;
 import net.lingala.zip4j.exception.ZipException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -32,7 +34,8 @@ import java.util.*;
 @PropertySource({"classpath:application.properties"})
 public class BasisServiceImpl implements BasisService {
 
-    private static Logger logger = Logger.getLogger( BasisServiceImpl.class );
+    Logger logger = LoggerFactory.getLogger( BasisServiceImpl.class);
+
 
 
     @Value("${zip.encode}")

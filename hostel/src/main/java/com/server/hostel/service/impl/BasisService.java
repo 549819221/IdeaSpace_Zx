@@ -1,10 +1,8 @@
 package com.server.hostel.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.server.hostel.dao.PackageSerialDao;
 import com.server.hostel.dao.PackageSerialLgDao;
 import com.server.hostel.entity.*;
-import com.server.hostel.entity.PackageSerialInfo;
 import com.server.hostel.entity.PackageSerialLgInfo;
 import com.server.hostel.entity.PublicKeyResult;
 import com.server.hostel.entity.TokenResult;
@@ -70,8 +68,6 @@ public class BasisService {
     @Resource
     private FTPUtil fTPUtil;
 
-    @Autowired
-    private PackageSerialDao packageSerialDao;
     @Autowired
     private PackageSerialLgDao packageSerialLgDao;
 
@@ -150,7 +146,8 @@ public class BasisService {
             ScheduledTasks.publicKey = "04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A";
         }else {
             Map<String, Object> temp = new HashMap<>();
-            Map<String, Object> object = (Map<String, Object>) HttpUtil.post( publicKeyUrl, temp ).get( "data" );
+            Map<String, Object> object = (Map<String, Object>) HttpUtil.get( publicKeyUrl, temp ).get( "data" );
+            logger.info( "============>获取公钥成功" );
             ScheduledTasks.publicKey = PowerUtil.getString( object.get("publicKey"));
         }
     }
@@ -164,12 +161,13 @@ public class BasisService {
      * @edit
      */
     public Object dataUploadSm2(UploadDataSm2Info uploadDataSm2Info) {
+        System.out.println( "上传数据===========================>1" );
         String serial = uploadDataSm2Info.getSerial();
         String encryptData = uploadDataSm2Info.getData();
+        String dataType = uploadDataSm2Info.getData_type();
         String accountNo = uploadDataSm2Info.getAccountNo();
         String token = uploadDataSm2Info.getToken();
         String publicKey = uploadDataSm2Info.getPublicKey();
-        String uploadUrl = ParamEnum.uploadUrl.lgDataUpload.getCode();
         if(PowerUtil.isNull( token )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
         }
@@ -179,7 +177,10 @@ public class BasisService {
         if(PowerUtil.isNull( serial )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
         }
-        int count = packageSerialDao.countBySerial(serial);
+        if(PowerUtil.isNull( dataType )){
+            return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"dataType(数据类型)字段不能为空.");
+        }
+        int count = packageSerialLgDao.countBySerial(serial);
         if (count > 0){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( "此 " ).append( serial ).append( " serial(流水号) 已存在。" ).toString() );
         }
@@ -205,29 +206,33 @@ public class BasisService {
         if (!ScheduledTasks.publicKey.equals( publicKey )) {
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"公钥过期,请重新获取.");
         }
-
+        System.out.println( "上传数据===========================>2" );
         PackageSerialLgInfo packageSerialLgInfo = new PackageSerialLgInfo();
         packageSerialLgInfo.setSerial(serial);
         packageSerialLgInfo.setUploadTime(new Date() );
         packageSerialLgInfo.setResult(ParamEnum.resultStatus.status0.getCode());
         packageSerialLgInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
         packageSerialLgInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
+        packageSerialLgInfo.setDataType( dataType );
         packageSerialLgInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status0.getCode() );
         packageSerialLgInfo.setFastdfsStatus( ParamEnum.fastdfsStatus.status0.getCode() );
-        packageSerialLgInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( uploadUrl ).toString() );
+        packageSerialLgInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( dataType ).toString() );
         packageSerialLgInfo.setPublicKey( publicKey );
         Boolean isSuccess = null;
+
         if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
             try {
                 String fastDFSPath = "";
+
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
+                System.out.println( "上传数据===========================>"+JSON.toJSONString(uploadDataSm2Info) );
                 fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataSm2Info).getBytes());
                 if (PowerUtil.isNotNull( fastDFSPath )) {
                     /*byte[] data = fastDFSClient.download(fastDFSPath);
                     if (data == null) {
                         return new UploadDataResult( ParamEnum.resultCode.error.getCode(),  "fastDFS文件上传失败。");
                     }
-                    packageSerialInfo.setFileSize( data.length );*/
+                    PackageSerialLgInfo.setFileSize( data.length );*/
                     packageSerialLgInfo.setResult(ParamEnum.resultStatus.status1.getCode());
                     packageSerialLgInfo.setFastdfsId(fastDFSPath);
                     isSuccess = true;
@@ -275,57 +280,57 @@ public class BasisService {
      */
 
     @Transactional(rollbackOn = Exception.class)
-    public UploadDataResult updateStatus(PackageSerialInfo packageSerialParam) {
+    public UploadDataResult updateStatus(PackageSerialLgInfo packageSerialParam) {
         String serial = packageSerialParam.getSerial();
         String ftpStatus = packageSerialParam.getFtpStatus();
         String result = packageSerialParam.getResult();
         if(PowerUtil.isNull( serial )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"serial(流水号)字段不能为空.");
         }
-        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById(serial);
-        if (!packageSerialInfoOptional.isPresent()){
+        Optional<PackageSerialLgInfo> PackageSerialLgInfoOptional = packageSerialLgDao.findById(serial);
+        if (!PackageSerialLgInfoOptional.isPresent()){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder().append( serial ).append( " 该serial(流水号) 不存在。" ).toString() );
         }else {
-            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            PackageSerialLgInfo PackageSerialLgInfo = PackageSerialLgInfoOptional.get();
             if (PowerUtil.isNotNull( ftpStatus )) {
                 if (!ParamEnum.ftpStatus.status1.getCode().equals( ftpStatus )) {
                     return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder( "ftpStatus(ftp文件状态)字段不符合规范.所传参数: " ).append( result ).toString() );
                 }
-                packageSerialInfo.setFtpStatus( ftpStatus );
+                PackageSerialLgInfo.setFtpStatus( ftpStatus );
             }
             if (PowerUtil.isNotNull( result )) {
                 if (!ParamEnum.resultStatus.status1.getCode().equals( result ) && !ParamEnum.resultStatus.status2.getCode().equals( result )) {
                     return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(), new StringBuilder("result(上传结果)字段不符合规范.所传参数:" ).append( result ).toString() );
                 }
-                packageSerialInfo.setResult( result );
+                PackageSerialLgInfo.setResult( result );
             }
-            packageSerialDao.save( packageSerialInfo );
+            packageSerialLgDao.save( PackageSerialLgInfo );
         }
         return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  "更新成功", "" );
     }
 
     /**
      * @description 从fastDfs同步到ftp
-     * @param  packageSerialInfo
+     * @param  PackageSerialLgInfo
      * @return  返回结果
      * @date  20/09/16 10:08
      * @author  wanghb
      * @edit
      */
 
-    public Boolean uploadFtp(PackageSerialInfo packageSerialInfo) throws Exception {
+    public Boolean uploadFtp(PackageSerialLgInfo PackageSerialLgInfo) throws Exception {
         FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
-        String fastdfsId = PowerUtil.getString( packageSerialInfo.getFastdfsId() );
+        String fastdfsId = PowerUtil.getString( PackageSerialLgInfo.getFastdfsId() );
         byte[] data = fastDFSClient.download(fastdfsId);
         if (data == null) {
-            logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( packageSerialInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
+            logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( PackageSerialLgInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
             return false;
         }
         UploadDataInfo uploadDataInfo = JSON.parseObject(data, UploadDataInfo.class);
         String serial = uploadDataInfo.getSerial();
         String zipPrefix = new StringBuilder(serial).append( "_" ).toString();
         File tempZip =  FileEncryptUtil.encryptStreamZip( JSON.toJSONString(uploadDataInfo),zipPrefix,zipEncode);
-        String ftpUploadPath = packageSerialInfo.getFtpPath();
+        String ftpUploadPath = PackageSerialLgInfo.getFtpPath();
         //文件上传
         Boolean isSuccess = fTPUtil.uploadFile( ftpUploadPath, tempZip );
         tempZip.delete();
@@ -342,20 +347,20 @@ public class BasisService {
      */
 
     public UploadDataResult reUploadFtp(String serial) {
-        Optional<PackageSerialInfo> packageSerialInfoOptional = packageSerialDao.findById( serial );
-        if (!packageSerialInfoOptional.isPresent()) {
+        Optional<PackageSerialLgInfo> PackageSerialLgInfoOptional = packageSerialLgDao.findById( serial );
+        if (!PackageSerialLgInfoOptional.isPresent()) {
             return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "该流水号不存在。" );
         } else {
-            PackageSerialInfo packageSerialInfo = packageSerialInfoOptional.get();
+            PackageSerialLgInfo PackageSerialLgInfo = PackageSerialLgInfoOptional.get();
             Boolean isSuccess = null;
             try {
-                isSuccess = uploadFtp(packageSerialInfo);
+                isSuccess = uploadFtp(PackageSerialLgInfo);
             } catch (Exception e) {
                 return new UploadDataResult( ParamEnum.resultCode.error.getCode(), "同步ftp异常。异常信息:"+ExceptionUtil.getOutputStream( e ) );
             }
             if (isSuccess) {
-                packageSerialInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
-                packageSerialDao.save( packageSerialInfo );
+                PackageSerialLgInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
+                packageSerialLgDao.save( PackageSerialLgInfo );
             }
             return new UploadDataResult( ParamEnum.resultCode.success.getCode(),  ParamEnum.resultCode.success.getName());
         }

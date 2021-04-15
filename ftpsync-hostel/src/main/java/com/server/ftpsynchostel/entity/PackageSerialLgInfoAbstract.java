@@ -1,8 +1,8 @@
-package com.server.hostel.entity;
+package com.server.ftpsynchostel.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.server.hostel.util.JsonViewMark;
+import com.server.ftpsynchostel.util.JsonViewMark;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

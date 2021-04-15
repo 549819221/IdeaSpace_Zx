@@ -111,7 +111,7 @@ public class BasisController  {
     @PostMapping("/updateStatus")
     @ResponseBody
     @ApiOperation(value = "更新状态", notes = "更新状态")
-    public UploadDataResult updateStatus(@RequestBody PackageSerialInfo packageSerialParam){
+    public UploadDataResult updateStatus(@RequestBody PackageSerialLgInfo packageSerialParam){
         try {
             return basisService.updateStatus(packageSerialParam);
         } catch (Exception e) {

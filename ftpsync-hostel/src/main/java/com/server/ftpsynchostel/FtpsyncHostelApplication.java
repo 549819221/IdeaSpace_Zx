@@ -8,9 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class FtpsyncHostelApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         SpringApplication.run( FtpsyncHostelApplication.class, args );
-        SpringContextUtil.getBean( ScheduledTasks.class ).syncFtp();
+        System.out.println("=================================>启动成功<=================================");
     }
 
 }

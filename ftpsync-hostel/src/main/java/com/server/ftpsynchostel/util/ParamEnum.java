@@ -41,8 +41,11 @@ public interface ParamEnum {
      * @author wanghb
      */
     enum uploadUrl {
-        dataUpload( "dataUpload","上传快递接口"),
-        expressStaffDataUpload( "expressStaffDataUpload","上传快递员网点接口"),
+        lgxx( "/hostelData/lgxx","旅馆数据"),
+        lglkrzxx( "/hostelData/lglkrzxx","旅客入住数据"),
+        lglktfxx( "/hostelData/lglktfxx","旅客退房数据"),
+        lglkhfxx( "/hostelData/lglkhfxx","旅客换房数据"),
+        lgcyryxx( "/hostelData/lgcyryxx","旅馆从业人员数据"),
         ;
         private String code;
         private String name;

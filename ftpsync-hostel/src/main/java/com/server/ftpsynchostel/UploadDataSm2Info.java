@@ -1,4 +1,4 @@
-package com.server.hostel.entity;
+package com.server.ftpsynchostel;
 
 import lombok.Getter;
 import lombok.Setter;

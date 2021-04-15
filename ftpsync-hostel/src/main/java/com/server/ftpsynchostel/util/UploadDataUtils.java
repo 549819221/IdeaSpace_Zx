@@ -1,5 +1,6 @@
 package com.server.ftpsynchostel.util;
 
+import com.server.ftpsynchostel.UploadDataSm2Info;
 import com.server.ftpsynchostel.entity.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -36,36 +37,36 @@ public class UploadDataUtils {
         String keyId = "";
         // 生成数据包信息，数据包信息将会在数据文件上传完成之后，同步上传消息队列中
         // 之后传输到公安网，最终在公安网通过数据包信息验证数据包完整性
-        UploadDataInfo uploadDataInfo = packDataInfo(encryptBytes, keyId);
+        UploadDataSm2Info UploadDataSm2Info = packDataInfo(encryptBytes, keyId);
         // 上传加密后的文件到FastDFS
         uploadDataFile(data);
         // 发送数据文件信息到消息队列
-        sendDataInfo(uploadDataInfo);
+        sendDataInfo(UploadDataSm2Info);
         // 保存信息数据到数据库，方便后续对账
-        saveDataInfo(uploadDataInfo);
+        saveDataInfo(UploadDataSm2Info);
         return null;
     }
 
     /**
      * @description   保存信息数据到数据库，方便后续对账
-     * @param  uploadDataInfo  上传信息
+     * @param  UploadDataSm2Info  上传信息
      * @date  20/07/31 17:21
      * @author  wanghb
      * @edit
      */
-    private static void saveDataInfo(UploadDataInfo uploadDataInfo) {
+    private static void saveDataInfo(UploadDataSm2Info UploadDataSm2Info) {
 
     }
 
     /**
      * @description  发送数据文件信息到消息队列
-     * @param  uploadDataInfo  上传信息
+     * @param  UploadDataSm2Info  上传信息
      * @return
      * @date  20/07/31 17:21
      * @author  wanghb
      * @edit
      */
-    private static void sendDataInfo(UploadDataInfo uploadDataInfo) {
+    private static void sendDataInfo(UploadDataSm2Info UploadDataSm2Info) {
 
     }
 
@@ -91,7 +92,7 @@ public class UploadDataUtils {
      * @author  wanghb
      * @edit
      */
-    private static UploadDataInfo packDataInfo(byte[] encryptBytes, String keyId) {
+    private static UploadDataSm2Info packDataInfo(byte[] encryptBytes, String keyId) {
         return null;
     }
 

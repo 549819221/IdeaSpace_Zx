@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FtpsyncApplication {
     public static void main(String[] args) throws Exception {
         SpringApplication.run( FtpsyncApplication.class, args );
-        SpringContextUtil.getBean( ScheduledTasks.class ).syncFtp();
-        SpringContextUtil.getBean( ScheduledTasks.class ).syncStaffFtp();
+        //SpringContextUtil.getBean( ScheduledTasks.class ).syncStaffFtp();
+        //SpringContextUtil.getBean( ScheduledTasks.class ).syncFtp();
     }
 
 }
