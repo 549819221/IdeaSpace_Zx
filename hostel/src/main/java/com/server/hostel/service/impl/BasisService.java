@@ -161,13 +161,14 @@ public class BasisService {
      * @edit
      */
     public Object dataUploadSm2(UploadDataSm2Info uploadDataSm2Info) {
-        System.out.println( "上传数据===========================>1" );
         String serial = uploadDataSm2Info.getSerial();
         String encryptData = uploadDataSm2Info.getData();
         String dataType = uploadDataSm2Info.getData_type();
         String accountNo = uploadDataSm2Info.getAccountNo();
         String token = uploadDataSm2Info.getToken();
         String publicKey = uploadDataSm2Info.getPublicKey();
+        Date date = new Date();
+        uploadDataSm2Info.setReceiver_time( DateUtil.toString( date,DateUtil.DATE_LONG ) );
         if(PowerUtil.isNull( token )){
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"token字段不能为空.");
         }
@@ -206,10 +207,9 @@ public class BasisService {
         if (!ScheduledTasks.publicKey.equals( publicKey )) {
             return new UploadDataResult( ParamEnum.resultCode.paramError.getCode(),  ParamEnum.resultCode.paramError.getName(),"公钥过期,请重新获取.");
         }
-        System.out.println( "上传数据===========================>2" );
         PackageSerialLgInfo packageSerialLgInfo = new PackageSerialLgInfo();
         packageSerialLgInfo.setSerial(serial);
-        packageSerialLgInfo.setUploadTime(new Date() );
+        packageSerialLgInfo.setUploadTime( date);
         packageSerialLgInfo.setResult(ParamEnum.resultStatus.status0.getCode());
         packageSerialLgInfo.setEvent(ParamEnum.eventStatus.status0.getCode());
         packageSerialLgInfo.setFtpStatus(ParamEnum.ftpStatus.status0.getCode());
@@ -219,11 +219,9 @@ public class BasisService {
         packageSerialLgInfo.setFtpPath( new StringBuilder( ftpUploadPath ).append( dataType ).toString() );
         packageSerialLgInfo.setPublicKey( publicKey );
         Boolean isSuccess = null;
-
         if(ParamEnum.properties.dev.getCode().equals( active ) || ParamEnum.properties.pro.getCode().equals( active )){
             try {
                 String fastDFSPath = "";
-
                 FastDFSClient fastDFSClient = new FastDFSClient(fdfsConfPath);
                 System.out.println( "上传数据===========================>"+JSON.toJSONString(uploadDataSm2Info) );
                 fastDFSPath = fastDFSClient.uploadFile(JSON.toJSONString(uploadDataSm2Info).getBytes());
@@ -270,6 +268,7 @@ public class BasisService {
         }
     }
 
+    
     /**
      * @description  更新包流水信息
      * @param  packageSerialParam  实体

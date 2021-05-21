@@ -17,6 +17,8 @@ public class UploadDataSm2Info {
     private String publicKey;
     //数据包流水ID
     private String serial;
+    //接收时间
+    private String receiver_time;
     //令牌
     private String token;
 

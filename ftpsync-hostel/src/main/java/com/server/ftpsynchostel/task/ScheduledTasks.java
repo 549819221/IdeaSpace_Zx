@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -537,5 +538,20 @@ public class ScheduledTasks {
         return true;
     }
 
+
+    public static void main(String[] args) throws IOException {
+        Map<String, Object> temp = new HashMap<>();
+        for (int i = 0; i < 10000; i++) {
+            temp.put("accountNo","HZrsmeovbpnm");
+            temp.put("data","047A71B4E622CFF4B4FC41B54C537F789D129954EB8EEF87BF69FDB1C0EC409ABE7EFBC1E2ED485EC64DE5878317CDD2F67F153A005C75BE3E3EE9AE867132121AF15CD20D459A7F5768CDEDD6369D465070E6270F7B7B6E4719EF2BDBE9A8F86C199056760074A7510A3835062432AA3FE705E76E8274CB686F24D28CA8B6B571A006CEC8B750CF022AD47B0A62BB812C9635F07E3A17331BE856939EC65585440EE924A26F651DC12EEFC3605DF5F64B6256EF841A44DD1A6148FF1932147194722B165B1F6F8BDCBB1A557C0F570C94E7A9716F2A64C5B5365B954777CA9E5C3CF6C96E9F6E90824185ABEC1E550FA5B0E1");
+            temp.put("data_type","test");
+            temp.put("publicKey","04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A");
+            temp.put("serial","T210003420210506000000000"+i);
+            temp.put("token","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MjAyOTQxNDEsImFjY291bnQiOiJIWnJzbWVvdmJwbm0ifQ.1blavUkHhJJTbKS4ebQKVcOSVFaqfCOHVmUE4U0_XIc");
+            Map<String, Object> params = HttpUtil.post( "http://221.226.3.55:40087/hostelBasis/dataUploadSm2",temp );
+            System.out.println(JSON.toJSONString( params ));
+        }
+
+    }
 
 }
