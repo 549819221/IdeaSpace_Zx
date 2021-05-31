@@ -21,5 +21,8 @@ public class UploadDataSm2Info {
     private String receiver_time;
     //令牌
     private String token;
+    /**
+     * 修改该实体  上传和同步   要同时进行修改
+     */
 
 }

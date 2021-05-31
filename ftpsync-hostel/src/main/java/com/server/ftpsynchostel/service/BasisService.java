@@ -91,8 +91,8 @@ public class BasisService  {
                 logger.error( new StringBuilder( "这个流水号,从fstdfs读取为空,流水号:" ).append( PackageSerialLgInfo.getSerial() ).append( ".fastdfsId为" ).append( fastdfsId ).toString() );
             }else {
                 PackageSerialLgInfo.setSyncFtpStatus( ParamEnum.syncFtpStatus.status1.getCode() );
-                UploadDataSm2Info UploadDataSm2Info = JSON.parseObject(data, UploadDataSm2Info.class);
-                jsons.add( JSON.toJSONString(UploadDataSm2Info) );
+                UploadDataSm2Info uploadDataSm2Info = JSON.parseObject(data, UploadDataSm2Info.class);
+                jsons.add( JSON.toJSONString(uploadDataSm2Info) );
             }
         }
         String serial = UUID.randomUUID().toString().replaceAll( "-","" );
